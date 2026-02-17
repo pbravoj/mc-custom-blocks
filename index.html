@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>BPP Smart Selector - Implementos</title>
+    <script src="blocksdk.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 15px; background: #fff; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #0055aa; }
+        select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 15px; }
+        .footer { font-size: 10px; color: #999; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px; }
+    </style>
+</head>
+<body>
+    <label>Posición del Producto (Snowflake SKU)</label>
+    <select id="posicion" onchange="update()">
+        <option value="1">Producto 1</option>
+        <option value="2">Producto 2</option>
+        <option value="3">Producto 3</option>
+        <option value="4">Producto 4</option>
+        <option value="5">Producto 5</option>
+        <option value="6">Producto 6</option>
+    </select>
+
+    <label>Layout Maestro</label>
+    <select id="layout" onchange="update()">
+        <option value="BPP_Layout_Claro">Tema Claro</option>
+        <option value="BPP_Layout_Oscuro">Tema Oscuro</option>
+    </select>
+
+    <div class="footer">Implementos S.A. | Arquitectura Segura</div>
+
+    <script>
+        var sdk = new window.sfdc.BlockSDK();
+        function update() {
+            var p = document.getElementById('posicion').value;
+            var l = document.getElementById('layout').value;
+            
+            // Inyectamos la variable @ItemIndex y llamamos al bloque maestro
+            var logic = '%%[ SET @ItemIndex = ' + p + ' SET @LayoutName = "' + l + '" ]%%';
+            var call = '%%=ContentBlockByName(Concat("Content Builder\\BPP\\", @LayoutName))=%%';
+            
+            sdk.setContent(logic + call);
+            
+            // Forzamos la miniatura para que no salga el código en la biblioteca
+            sdk.setAsset({
+                "metaData": {
+                    "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" }
+                }
+            });
+        }
+        update(); // Ejecución inicial
+    </script>
+</body>
+</html>
