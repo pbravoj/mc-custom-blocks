@@ -1,60 +1,83 @@
-function update() {
-    var pos = document.getElementById('p').value;
-    var lay = document.getElementById('l').value;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Configurador BPP - Implementos S.A.</title>
+    <script src="blocksdk.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 15px; background-color: #f4f6f9; }
+        .card { background: white; border: 1px solid #d8dde6; border-radius: 4px; padding: 15px; }
+        h2 { color: #0055aa; font-size: 16px; margin-top: 0; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 13px; }
+        select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>BPP Smart Selector</h2>
+        <label>Producto a mostrar:</label>
+        <select id="p" onchange="update()">
+            <option value="1">Producto 1 (SKU_1)</option>
+            <option value="2">Producto 2 (SKU_2)</option>
+            <option value="3">Producto 3 (SKU_3)</option>
+            <option value="4">Producto 4 (SKU_4)</option>
+            <option value="5">Producto 5 (SKU_5)</option>
+            <option value="6">Producto 6 (SKU_6)</option>
+        </select>
 
-    // --- SECCIÓN 1: LÓGICA DE DATOS (Encapsulada para el SDK) ---
-    var logic = '%%[' +
-        /* 1. Definición de Posición elegida en el formulario */
-        ' SET @ItemIndex = ' + pos + ' ' +
-        ' SET @LayoutName = "' + lay + '" ' +
+        <label>Diseño Visual:</label>
+        <select id="l" onchange="update()">
+            <option value="BPP_Layout_Claro">Tema Claro</option>
+            <option value="BPP_Layout_Oscuro">Tema Oscuro</option>
+        </select>
+    </div>
 
-        /* 2. Recuperación de Campaign_ID de la Audiencia */
-        ' SET @CampID = AttributeValue("Campaign_ID") ' +
-        ' IF Empty(@CampID) THEN SET @CampID = "SKU_PARAMETRICO" ENDIF ' +
+    <script>
+        var sdk = new window.sfdc.BlockSDK();
 
-        /* 3. Búsqueda de SKU en Configuración */
-        ' SET @ColumnaSKU = Concat("SKU_", @ItemIndex) ' +
-        ' SET @SKU = Lookup("Campanas_Config_DE", @ColumnaSKU, "Campaign_ID", @CampID) ' +
+        function update() {
+            var pos = document.getElementById('p').value;
+            var lay = document.getElementById('l').value;
 
-        /* 4. Lógica de Producto (Solo si hay SKU) */
-        ' IF NOT Empty(@SKU) THEN ' +
-        
-            /* A. Construcción de URL de Imagen (TU LÓGICA DE PREFIJO/SUFIJO) */
-            ' SET @PrefijoUrl = "https://images.implementos.cl/img/1000/" ' +
-            ' SET @SufijoUrl  = "-1.jpg" ' +
-            ' SET @Imagen = Concat(@PrefijoUrl, @SKU, @SufijoUrl) ' +
+            // Construcción del AMPScript con escape de caracteres
+            var logic = "%%[" +
+                " SET @ItemIndex = " + pos +
+                " SET @LayoutName = '" + lay + "'" +
+                " SET @CampID = AttributeValue('Campaign_ID')" +
+                " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF" +
+                " SET @ColumnaSKU = Concat('SKU_', @ItemIndex)" +
+                " SET @SKU = Lookup('Campanas_Config_DE', @ColumnaSKU, 'Campaign_ID', @CampID)" +
+                " IF NOT Empty(@SKU) THEN" +
+                "   SET @PrefijoUrl = 'https://images.implementos.cl/img/1000/'" +
+                "   SET @SufijoUrl = '-1.jpg'" +
+                "   SET @Imagen = Concat(@PrefijoUrl, @SKU, @SufijoUrl)" +
+                "   SET @Filas = LookupRows('Master_Products_DE', 'SKU', @SKU)" +
+                "   IF RowCount(@Filas) > 0 THEN" +
+                "     SET @Fila = Row(@Filas, 1)" +
+                "     SET @Nombre = Field(@Fila, 'NOMBRE')" +
+                "     SET @Precio = Field(@Fila, 'PRECIO_MESON')" +
+                "     SET @Descripcion = Concat(Field(@Fila, 'DESCRIP_L1'), ' ', Field(@Fila, 'DESCRIP_L2'))" +
+                "     SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL')" +
+                "   ENDIF" +
+                " ENDIF" +
+                "]%%";
 
-            /* B. Recuperación desde Master_Products_DE */
-            ' SET @Filas = LookupRows("Master_Products_DE", "SKU", @SKU) ' +
-            ' IF RowCount(@Filas) > 0 THEN ' +
-                ' SET @Fila = Row(@Filas, 1) ' +
-                ' SET @Nombre = Field(@Fila, "NOMBRE") ' +
-                ' SET @Precio = Field(@Fila, "PRECIO_MESON") ' +
-                ' SET @DescL1 = Field(@Fila, "DESCRIP_L1") ' +
-                ' SET @DescL2 = Field(@Fila, "DESCRIP_L2") ' +
-                ' SET @Descripcion = Concat(@DescL1, " ", @DescL2) ' +
-                ' SET @PrecioFinal = FormatCurrency(@Precio, "es-CL") ' +
-            ' ELSE ' +
-                ' SET @Nombre = "Producto no encontrado" ' +
-                ' SET @Descripcion = "Sin descripción disponible." ' +
-                ' SET @PrecioFinal = "" ' +
-            ' ENDIF ' +
-        ' ENDIF ' +
-        ']%%';
+            var render = "%%[ OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ]%%";
 
-    // --- SECCIÓN 2: RENDERIZADO ---
-    // Esto llama al bloque HTML que guardaste en Content Builder
-    var render = '%%[ OUTPUT(ContentBlockByName(Concat("Content Builder\\BPP\\", @LayoutName))) ]%%';
+            // Enviar a Salesforce
+            sdk.setContent(logic + render);
 
-    // Inyectamos todo al editor de Salesforce
-    sdk.setContent(logic + render);
-
-    // --- SECCIÓN 3: MINIATURA ---
-    sdk.setAsset({
-        "metaData": {
-            "thumbnail": { 
-                "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" 
-            }
+            // Actualizar miniatura
+            sdk.setAsset({
+                "metaData": {
+                    "thumbnail": { 
+                        "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" 
+                    }
+                }
+            });
         }
-    });
-}
+        // Inicializar
+        update();
+    </script>
+</body>
+</html>
