@@ -2,31 +2,66 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector</title>
+    <title>BPP Selector - Implementos S.A.</title>
     <script src="blocksdk.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 10px; background: #f4f6f9; }
-        .card { background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #d8dde6; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 12px; }
-        select { width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; }
+        body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
+        .header { background-color: #ffffff; padding: 15px; border-bottom: 3px solid #0055aa; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .logo { height: 35px; margin-right: 15px; }
+        .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
+        
+        .container { padding: 20px; }
+        .card { background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #d8dde6; margin-bottom: 20px; }
+        
+        .guide-section { background-color: #eef4ff; border-left: 4px solid #0055aa; padding: 12px; margin-bottom: 20px; font-size: 12px; line-height: 1.5; }
+        .guide-section h3 { margin: 0 0 8px 0; font-size: 13px; color: #0055aa; text-transform: uppercase; }
+        .guide-section ul { margin: 5px 0; padding-left: 18px; }
+        
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; }
+        select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-size: 14px; margin-bottom: 20px; }
+        .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <label>Producto a mostrar:</label>
-        <select id="p" onchange="update()">
-            <option value="1">Producto 1</option>
-            <option value="2">Producto 2</option>
-            <option value="3">Producto 3</option>
-            <option value="4">Producto 4</option>
-            <option value="5">Producto 5</option>
-            <option value="6">Producto 6</option>
-        </select>
 
-        <label>Diseño:</label>
-        <select id="l" onchange="update()">
-            <option value="BPP_Layout_Claro">Tema Claro (#8EA3B4)</option>
-        </select>
+    <div class="header">
+        <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
+        <h1 class="header-title">BPP (Bloque Producto Precio) Parámetros</h1>
+    </div>
+
+    <div class="container">
+        <div class="guide-section">
+            <h3>Guía de Implementación</h3>
+            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> de la audiencia con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente de la posición seleccionada.</p>
+            <p><strong>Templates:</strong> Los diseños gráficos (Look & Feel) residen en:</p>
+            <ul>
+                <li><strong>Ruta:</strong> <code>Content Builder > BPP > ...</code></li>
+                <li><strong>Claro:</strong> <code>BPP_Layout_Claro</code> (#8EA3B4)</li>
+                <li><strong>Oscuro:</strong> <code>BPP_Layout_Oscuro</code> (Cyber/Ofertas)</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <label for="p">1. Seleccionar Posición (Snowflake):</label>
+            <select id="p" onchange="update()">
+                <option value="1">Producto 1 (SKU_1)</option>
+                <option value="2">Producto 2 (SKU_2)</option>
+                <option value="3">Producto 3 (SKU_3)</option>
+                <option value="4">Producto 4 (SKU_4)</option>
+                <option value="5">Producto 5 (SKU_5)</option>
+                <option value="6">Producto 6 (SKU_6)</option>
+            </select>
+
+            <label for="l">2. Seleccionar Template Visual:</label>
+            <select id="l" onchange="update()">
+                <option value="BPP_Layout_Claro">BPP Layout Claro (#8EA3B4)</option>
+                <option value="BPP_Layout_Oscuro">BPP Layout Oscuro</option>
+            </select>
+        </div>
+
+        <div class="footer">
+            Implementos S.A. | Arquitectura de Capas Segura v2.0
+        </div>
     </div>
 
     <script>
@@ -36,7 +71,6 @@
             var pos = document.getElementById('p').value;
             var lay = document.getElementById('l').value;
 
-            // Bloque de AMPScript para capturar datos de Snowflake
             var logic = "%%[" +
                 " SET @ItemIndex = " + pos +
                 " SET @LayoutName = '" + lay + "'" +
@@ -59,14 +93,12 @@
                 " ENDIF" +
                 "]%%";
 
-            // Llamada al Layout Maestro
             var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ENDIF ]%%";
 
             sdk.setContent(logic + render);
 
-            // Actualiza la miniatura
             sdk.setAsset({
-                "name": "BPP_Selector",
+                "name": "BPP_Selector_Active",
                 "metaData": {
                     "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" }
                 }
