@@ -6,16 +6,18 @@
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: sans-serif; padding: 15px; background-color: #f4f6f9; }
-        .card { background: white; border: 1px solid #d8dde6; border-radius: 4px; padding: 15px; }
-        h2 { color: #0055aa; font-size: 16px; margin-top: 0; }
-        label { display: block; margin: 10px 0 5px; font-weight: bold; font-size: 13px; }
-        select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .card { background: white; border: 1px solid #d8dde6; border-radius: 4px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #0055aa; font-size: 16px; margin-top: 0; border-bottom: 2px solid #0055aa; padding-bottom: 8px; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; font-size: 13px; }
+        select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; }
+        .footer { font-size: 10px; color: #999; text-align: center; margin-top: 15px; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>BPP Smart Selector</h2>
-        <label>Producto a mostrar:</label>
+        
+        <label for="p">Producto a mostrar:</label>
         <select id="p" onchange="update()">
             <option value="1">Producto 1 (SKU_1)</option>
             <option value="2">Producto 2 (SKU_2)</option>
@@ -25,11 +27,13 @@
             <option value="6">Producto 6 (SKU_6)</option>
         </select>
 
-        <label>Diseño Visual:</label>
+        <label for="l">Diseño Visual:</label>
         <select id="l" onchange="update()">
             <option value="BPP_Layout_Claro">Tema Claro</option>
             <option value="BPP_Layout_Oscuro">Tema Oscuro</option>
         </select>
+
+        <div class="footer">Implementos S.A. | V-2026</div>
     </div>
 
     <script>
@@ -39,32 +43,32 @@
             var pos = document.getElementById('p').value;
             var lay = document.getElementById('l').value;
 
-            // Construcción del AMPScript con escape de caracteres
-            var logic = "%%[" +
-                " SET @ItemIndex = " + pos +
-                " SET @LayoutName = '" + lay + "'" +
-                " SET @CampID = AttributeValue('Campaign_ID')" +
-                " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF" +
-                " SET @ColumnaSKU = Concat('SKU_', @ItemIndex)" +
-                " SET @SKU = Lookup('Campanas_Config_DE', @ColumnaSKU, 'Campaign_ID', @CampID)" +
-                " IF NOT Empty(@SKU) THEN" +
-                "   SET @PrefijoUrl = 'https://images.implementos.cl/img/1000/'" +
-                "   SET @SufijoUrl = '-1.jpg'" +
-                "   SET @Imagen = Concat(@PrefijoUrl, @SKU, @SufijoUrl)" +
-                "   SET @Filas = LookupRows('Master_Products_DE', 'SKU', @SKU)" +
-                "   IF RowCount(@Filas) > 0 THEN" +
-                "     SET @Fila = Row(@Filas, 1)" +
-                "     SET @Nombre = Field(@Fila, 'NOMBRE')" +
-                "     SET @Precio = Field(@Fila, 'PRECIO_MESON')" +
-                "     SET @Descripcion = Concat(Field(@Fila, 'DESCRIP_L1'), ' ', Field(@Fila, 'DESCRIP_L2'))" +
-                "     SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL')" +
-                "   ENDIF" +
-                " ENDIF" +
-                "]%%";
+            // Usamos tildes invertidas (Template Literals) para evitar errores de comillas
+            var logic = `%%[ 
+                SET @ItemIndex = ${pos}
+                SET @LayoutName = "${lay}"
+                SET @CampID = AttributeValue("Campaign_ID")
+                IF Empty(@CampID) THEN SET @CampID = "SKU_PARAMETRICO" ENDIF
+                SET @ColumnaSKU = Concat("SKU_", @ItemIndex)
+                SET @SKU = Lookup("Campanas_Config_DE", @ColumnaSKU, "Campaign_ID", @CampID)
+                IF NOT Empty(@SKU) THEN
+                    SET @PrefijoUrl = "https://images.implementos.cl/img/1000/"
+                    SET @SufijoUrl = "-1.jpg"
+                    SET @Imagen = Concat(@PrefijoUrl, @SKU, @SufijoUrl)
+                    SET @Filas = LookupRows("Master_Products_DE", "SKU", @SKU)
+                    IF RowCount(@Filas) > 0 THEN
+                        SET @Fila = Row(@Filas, 1)
+                        SET @Nombre = Field(@Fila, "NOMBRE")
+                        SET @Precio = Field(@Fila, "PRECIO_MESON")
+                        SET @Descripcion = Concat(Field(@Fila, "DESCRIP_L1"), " ", Field(@Fila, "DESCRIP_L2"))
+                        SET @PrecioFinal = FormatCurrency(@Precio, "es-CL")
+                    ENDIF
+                ENDIF
+            ]%%`;
 
-            var render = "%%[ OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ]%%";
+            var render = `%%[ OUTPUT(ContentBlockByName(Concat("Content Builder\\BPP\\", @LayoutName))) ]%%`;
 
-            // Enviar a Salesforce
+            // Enviar el bloque a Salesforce
             sdk.setContent(logic + render);
 
             // Actualizar miniatura
@@ -76,7 +80,8 @@
                 }
             });
         }
-        // Inicializar
+
+        // Ejecutar al cargar
         update();
     </script>
 </body>
