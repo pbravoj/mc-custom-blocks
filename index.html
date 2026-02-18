@@ -88,7 +88,7 @@
                 "        SET @UrlMarca = Concat('https://omni.implementos.cl/assets/images/marca_producto/', @Marca, '.png')" +
                 "        SET @Descripcion = Concat(Field(@Fila, 'DESCRIP_L1'), ' ', Field(@Fila, 'DESCRIP_L2'))" +
                 "        SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL')" +
-                "        SET @Imagen = Concat('https://images.implementos.cl/img/H/', @SKU, '-1.png')" +
+                "        SET @Imagen = Concat('https://images.implementos.cl/img/h/', @SKU, '-1.png')" +
                 "    ENDIF" +
                 " ENDIF" +
                 "]%%";
@@ -108,4 +108,5 @@
     </script>
 </body>
 </html>
+
 
