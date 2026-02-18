@@ -13,16 +13,14 @@
         .container { padding: 20px; }
         .card { background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #d8dde6; margin-bottom: 20px; }
         
-        /* SECCIÓN DE GUÍA RESTAURADA */
+        /* SECCIÓN DE GUÍA */
         .guide-section { background-color: #eef4ff; border-left: 4px solid #0055aa; padding: 15px; margin-bottom: 20px; font-size: 12px; line-height: 1.6; }
         .guide-section h3 { margin: 0 0 10px 0; font-size: 13px; color: #0055aa; text-transform: uppercase; letter-spacing: 0.5px; }
-        .guide-section ul { margin: 8px 0; padding-left: 18px; }
-        .guide-section li { margin-bottom: 4px; }
         
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; }
         select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-size: 14px; margin-bottom: 20px; }
         
-        /* FOOTER EN DOS LÍNEAS */
+        /* FOOTER DOBLE LÍNEA */
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; border-top: 1px solid #d8dde6; padding-top: 15px; line-height: 1.8; }
         .ver-badge { background: #0055aa; color: white; padding: 1px 5px; border-radius: 3px; font-weight: bold; font-size: 10px; }
     </style>
@@ -37,13 +35,10 @@
     <div class="container">
         <div class="guide-section">
             <h3>Guía de Implementación</h3>
-            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> de la audiencia con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente de la posición seleccionada.</p>
-            <p><strong>Templates:</strong> Los diseños gráficos (Look & Feel) residen en:</p>
-            <ul>
-                <li><strong>Ruta:</strong> <code>Content Builder > BPP > ...</code></li>
-                <li><strong>Claro:</strong> <code>BPP_Layout_Claro</code> (#8EA3B4)</li>
-                <li><strong>Oscuro:</strong> <code>BPP_Layout_Oscuro</code> (Cyber/Ofertas)</li>
-            </ul>
+            <p><strong>Mapeo de Datos:</strong> Vinculación vía <code>Campaign_ID</code> hacia <code>Campanas_Config_DE</code>.</p>
+            <p><strong>Librerías de Imagen:</strong><br>
+               - <strong>PNG:</strong> Transparencias (img/h/) para fondos de color.<br>
+               - <strong>JPG:</strong> Alta resolución (img/1000/) para fondos blancos.</p>
         </div>
 
         <div class="card">
@@ -57,7 +52,13 @@
                 <option value="6">Producto 6 (SKU_6)</option>
             </select>
 
-            <label for="l">2. Seleccionar Template Visual:</label>
+            <label for="imgLib">2. Juego de Librería de Imágenes:</label>
+            <select id="imgLib" onchange="update()">
+                <option value="PNG">Librería PNG (Transparencias - img/h/)</option>
+                <option value="JPG">Librería JPG (Alta Res. - img/1000/)</option>
+            </select>
+
+            <label for="l">3. Seleccionar Template Visual:</label>
             <select id="l" onchange="update()">
                 <option value="BPP_Layout_Claro">BPP Layout Claro (#8EA3B4)</option>
                 <option value="BPP_Layout_Oscuro">BPP Layout Oscuro</option>
@@ -66,7 +67,7 @@
 
         <div class="footer">
             Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.6.0-FINAL</span>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.7.0-FINAL</span>
         </div>
     </div>
 
@@ -76,9 +77,14 @@
         function update() {
             var pos = document.getElementById('p').value;
             var lay = document.getElementById('l').value;
+            var lib = document.getElementById('imgLib').value;
+
+            // Lógica de construcción de URLs de imagen
+            var imgPre = (lib === 'PNG') ? 'https://images.implementos.cl/img/h/' : 'https://images.implementos.cl/img/1000/';
+            var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
 
             var logic = "%%[" +
-                " SET @VersionMotor = 'v2.6.0-FINAL' " +
+                " SET @VersionMotor = 'v2.7.0-FINAL' " +
                 " SET @ItemIndex = " + pos +
                 " SET @LayoutName = '" + lay + "'" +
                 " SET @CampID = AttributeValue('Campaign_ID')" +
@@ -97,7 +103,7 @@
                 "        SET @Desc2 = Field(@Fila, 'DESCRIP_L2')" +
                 "        SET @Descripcion = Concat(@Desc1, ' ', @Desc2)" +
                 "        SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL')" +
-                "        SET @Imagen = Concat('https://images.implementos.cl/img/h/', @SKU, '-1.jpg')" +
+                "        SET @Imagen = Concat('" + imgPre + "', @SKU, '" + imgSuf + "')" +
                 "    ENDIF" +
                 " ENDIF" +
                 "]%%";
@@ -117,4 +123,5 @@
     </script>
 </body>
 </html>
+
 
