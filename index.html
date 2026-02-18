@@ -1,55 +1,60 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>BPP Smart Selector - Implementos</title>
-    <script src="blocksdk.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 15px; background: #fff; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: #0055aa; }
-        select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 15px; }
-        .footer { font-size: 10px; color: #999; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px; }
-    </style>
-</head>
-<body>
-    <label>Posición del Producto (Snowflake SKU)</label>
-    <select id="posicion" onchange="update()">
-        <option value="1">Producto 1</option>
-        <option value="2">Producto 2</option>
-        <option value="3">Producto 3</option>
-        <option value="4">Producto 4</option>
-        <option value="5">Producto 5</option>
-        <option value="6">Producto 6</option>
-    </select>
+function update() {
+    var pos = document.getElementById('p').value;
+    var lay = document.getElementById('l').value;
 
-    <label>Layout Maestro</label>
-    <select id="layout" onchange="update()">
-        <option value="BPP_Layout_Claro">Tema Claro</option>
-        <option value="BPP_Layout_Oscuro">Tema Oscuro</option>
-    </select>
+    // --- SECCIÓN 1: LÓGICA DE DATOS (Encapsulada para el SDK) ---
+    var logic = '%%[' +
+        /* 1. Definición de Posición elegida en el formulario */
+        ' SET @ItemIndex = ' + pos + ' ' +
+        ' SET @LayoutName = "' + lay + '" ' +
 
-    <div class="footer">Implementos S.A. | Arquitectura Segura</div>
+        /* 2. Recuperación de Campaign_ID de la Audiencia */
+        ' SET @CampID = AttributeValue("Campaign_ID") ' +
+        ' IF Empty(@CampID) THEN SET @CampID = "SKU_PARAMETRICO" ENDIF ' +
 
-    <script>
-        var sdk = new window.sfdc.BlockSDK();
-        function update() {
-            var p = document.getElementById('posicion').value;
-            var l = document.getElementById('layout').value;
-            
-            // Inyectamos la variable @ItemIndex y llamamos al bloque maestro
-            var logic = '%%[ SET @ItemIndex = ' + p + ' SET @LayoutName = "' + l + '" ]%%';
-            var call = '%%=ContentBlockByName(Concat("Content Builder\\BPP\\", @LayoutName))=%%';
-            
-            sdk.setContent(logic + call);
-            
-            // Forzamos la miniatura para que no salga el código en la biblioteca
-            sdk.setAsset({
-                "metaData": {
-                    "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" }
-                }
-            });
+        /* 3. Búsqueda de SKU en Configuración */
+        ' SET @ColumnaSKU = Concat("SKU_", @ItemIndex) ' +
+        ' SET @SKU = Lookup("Campanas_Config_DE", @ColumnaSKU, "Campaign_ID", @CampID) ' +
+
+        /* 4. Lógica de Producto (Solo si hay SKU) */
+        ' IF NOT Empty(@SKU) THEN ' +
+        
+            /* A. Construcción de URL de Imagen (TU LÓGICA DE PREFIJO/SUFIJO) */
+            ' SET @PrefijoUrl = "https://images.implementos.cl/img/1000/" ' +
+            ' SET @SufijoUrl  = "-1.jpg" ' +
+            ' SET @Imagen = Concat(@PrefijoUrl, @SKU, @SufijoUrl) ' +
+
+            /* B. Recuperación desde Master_Products_DE */
+            ' SET @Filas = LookupRows("Master_Products_DE", "SKU", @SKU) ' +
+            ' IF RowCount(@Filas) > 0 THEN ' +
+                ' SET @Fila = Row(@Filas, 1) ' +
+                ' SET @Nombre = Field(@Fila, "NOMBRE") ' +
+                ' SET @Precio = Field(@Fila, "PRECIO_MESON") ' +
+                ' SET @DescL1 = Field(@Fila, "DESCRIP_L1") ' +
+                ' SET @DescL2 = Field(@Fila, "DESCRIP_L2") ' +
+                ' SET @Descripcion = Concat(@DescL1, " ", @DescL2) ' +
+                ' SET @PrecioFinal = FormatCurrency(@Precio, "es-CL") ' +
+            ' ELSE ' +
+                ' SET @Nombre = "Producto no encontrado" ' +
+                ' SET @Descripcion = "Sin descripción disponible." ' +
+                ' SET @PrecioFinal = "" ' +
+            ' ENDIF ' +
+        ' ENDIF ' +
+        ']%%';
+
+    // --- SECCIÓN 2: RENDERIZADO ---
+    // Esto llama al bloque HTML que guardaste en Content Builder
+    var render = '%%[ OUTPUT(ContentBlockByName(Concat("Content Builder\\BPP\\", @LayoutName))) ]%%';
+
+    // Inyectamos todo al editor de Salesforce
+    sdk.setContent(logic + render);
+
+    // --- SECCIÓN 3: MINIATURA ---
+    sdk.setAsset({
+        "metaData": {
+            "thumbnail": { 
+                "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" 
+            }
         }
-        update(); // Ejecución inicial
-    </script>
-</body>
-</html>
+    });
+}
