@@ -1,42 +1,78 @@
-function update() {
-    var pos = document.getElementById('p').value;
-    var lay = document.getElementById('l').value;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>BPP Selector</title>
+    <script src="blocksdk.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 10px; background: #f4f6f9; }
+        .card { background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #d8dde6; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 12px; }
+        select { width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <label>Producto a mostrar:</label>
+        <select id="p" onchange="update()">
+            <option value="1">Producto 1</option>
+            <option value="2">Producto 2</option>
+            <option value="3">Producto 3</option>
+            <option value="4">Producto 4</option>
+            <option value="5">Producto 5</option>
+            <option value="6">Producto 6</option>
+        </select>
 
-    var logic = `%%[ 
-        SET @ItemIndex = ${pos}
-        SET @LayoutName = "${lay}"
-        SET @CampID = AttributeValue("Campaign_ID")
-        IF Empty(@CampID) THEN SET @CampID = "SKU_PARAMETRICO" ENDIF
-        
-        SET @ColumnaSKU = Concat("SKU_", @ItemIndex)
-        SET @SKU = Lookup("Campanas_Config_DE", @ColumnaSKU, "Campaign_ID", @CampID)
+        <label>Diseño:</label>
+        <select id="l" onchange="update()">
+            <option value="BPP_Layout_Claro">Tema Claro (#8EA3B4)</option>
+        </select>
+    </div>
 
-        IF NOT Empty(@SKU) THEN
-            SET @Filas = LookupRows("Master_Products_DE", "SKU", @SKU)
-            IF RowCount(@Filas) > 0 THEN
-                SET @Fila = Row(@Filas, 1)
-                SET @Nombre = Field(@Fila, "NOMBRE")
-                SET @Precio = Field(@Fila, "PRECIO_MESON")
-                
-                /* NUEVO: Mapeo de la Marca para la URL dinámica */
-                SET @Marca = Field(@Fila, "MARCA")
-                SET @UrlMarca = Concat("https://omni.implementos.cl/assets/images/marca_producto/", @Marca, ".png")
-                
-                SET @Descripcion = Concat(Field(@Fila, "DESCRIP_L1"), " ", Field(@Fila, "DESCRIP_L2"))
-                SET @PrecioFinal = FormatCurrency(@Precio, "es-CL")
-                SET @Imagen = Concat("https://images.implementos.cl/img/1000/", @SKU, "-1.jpg")
-            ENDIF
-        ENDIF
-    ]%%`;
+    <script>
+        var sdk = new window.sfdc.BlockSDK();
 
-    var render = `%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat("Content Builder\\BPP\\", @LayoutName))) ENDIF ]%%`;
+        function update() {
+            var pos = document.getElementById('p').value;
+            var lay = document.getElementById('l').value;
 
-    sdk.setContent(logic + render);
-    
-    sdk.setAsset({
-        "name": "BPP_Selector_V2",
-        "metaData": {
-            "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" }
+            // Bloque de AMPScript para capturar datos de Snowflake
+            var logic = "%%[" +
+                " SET @ItemIndex = " + pos +
+                " SET @LayoutName = '" + lay + "'" +
+                " SET @CampID = AttributeValue('Campaign_ID')" +
+                " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF" +
+                " SET @ColumnaSKU = Concat('SKU_', @ItemIndex)" +
+                " SET @SKU = Lookup('Campanas_Config_DE', @ColumnaSKU, 'Campaign_ID', @CampID)" +
+                " IF NOT Empty(@SKU) THEN" +
+                "    SET @Filas = LookupRows('Master_Products_DE', 'SKU', @SKU)" +
+                "    IF RowCount(@Filas) > 0 THEN" +
+                "        SET @Fila = Row(@Filas, 1)" +
+                "        SET @Nombre = Field(@Fila, 'NOMBRE')" +
+                "        SET @Precio = Field(@Fila, 'PRECIO_MESON')" +
+                "        SET @Marca = Field(@Fila, 'MARCA')" +
+                "        SET @UrlMarca = Concat('https://omni.implementos.cl/assets/images/marca_producto/', @Marca, '.png')" +
+                "        SET @Descripcion = Concat(Field(@Fila, 'DESCRIP_L1'), ' ', Field(@Fila, 'DESCRIP_L2'))" +
+                "        SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL')" +
+                "        SET @Imagen = Concat('https://images.implementos.cl/img/1000/', @SKU, '-1.jpg')" +
+                "    ENDIF" +
+                " ENDIF" +
+                "]%%";
+
+            // Llamada al Layout Maestro
+            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ENDIF ]%%";
+
+            sdk.setContent(logic + render);
+
+            // Actualiza la miniatura
+            sdk.setAsset({
+                "name": "BPP_Selector",
+                "metaData": {
+                    "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" }
+                }
+            });
         }
-    });
-}
+        update();
+    </script>
+</body>
+</html>
