@@ -28,9 +28,9 @@
     <div class="container">
         <div class="guide-section">
             <h3>Guía de Implementación</h3>
-            <p><strong>Mapeo de Datos:</strong> Mapeo vía <code>Campaign_ID</code> hacia <code>Campanas_Config_DE</code>.</p>
-            <p><strong>Ruta de Templates:</strong> <code>Content Builder > BPP</code></p>
-            <p><strong>Librería de Marcas:</strong> <code>LIBRERIAS_IMAGENES\MARCAS</code></p>
+            <p><strong>Mapeo de Datos:</strong> Mapeo vía <code>Campaign_ID</code>.</p>
+            <p><strong>Ruta Templates:</strong> <code>Content Builder / BPP</code></p>
+            <p><strong>Marcas:</strong> <code>LIBRERIAS_IMAGENES / MARCAS</code></p>
         </div>
 
         <div class="card">
@@ -56,7 +56,7 @@
 
         <div class="footer">
             Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.8.3-FINAL</span>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.8.4-FINAL</span>
         </div>
     </div>
 
@@ -71,7 +71,7 @@
             var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
 
             var logic = "%%[" +
-                " SET @VersionMotor = 'v2.8.3-FINAL' " +
+                " SET @VersionMotor = 'v2.8.4-FINAL' " +
                 " SET @ItemIndex = " + pos +
                 " SET @LayoutName = '" + lay + "' " +
                 " SET @CampID = AttributeValue('Campaign_ID') " +
@@ -94,8 +94,8 @@
                 " ENDIF " +
                 "]%%";
 
-            // CORRECCIÓN DE RUTA: Usamos barra simple escapada una sola vez para que SFMC reciba la ruta limpia.
-            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ENDIF ]%%";
+            // USAMOS BARRAS NORMALES "/" PARA EVITAR CONFLICTOS DE ESCAPE
+            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder/BPP/', @LayoutName))) ENDIF ]%%";
             
             sdk.setContent(logic + render);
             sdk.setAsset({
