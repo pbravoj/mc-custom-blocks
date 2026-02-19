@@ -20,7 +20,6 @@
     </style>
 </head>
 <body>
-
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
         <h1 class="header-title">BPP (Bloque Producto Precio) Parámetros</h1>
@@ -29,8 +28,12 @@
     <div class="container">
         <div class="guide-section">
             <h3>Guía de Implementación</h3>
-            <p><strong>Mapeo de Datos:</strong> Vinculación vía <code>Campaign_ID</code> hacia <code>Campanas_Config_DE</code>.</p>
-            <p><strong>Librerías de Imagen:</strong> PNG (img/h/) para transparencias y JPG (img/1000/) para alta res.</p>
+            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> de la audiencia con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente de la posición seleccionada.</p>
+            <p><strong>Templates:</strong> Los diseños gráficos residen en <code>Content Builder > BPP</code>:</p>
+            <ul>
+                <li><strong>Claro:</strong> <code>BPP_Layout_Claro</code> (#8EA3B4)</li>
+                <li><strong>Oscuro:</strong> <code>BPP_Layout_Oscuro</code></li>
+            </ul>
         </div>
 
         <div class="card">
@@ -40,32 +43,28 @@
                 <option value="2">Producto 2 (SKU_2)</option>
                 <option value="3">Producto 3 (SKU_3)</option>
                 <option value="4">Producto 4 (SKU_4)</option>
-                <option value="5">Producto 5 (SKU_5)</option>
-                <option value="6">Producto 6 (SKU_6)</option>
             </select>
 
-            <label for="imgLib">2. Juego de Librería de Imágenes:</label>
+            <label for="imgLib">2. Librería de Imágenes:</label>
             <select id="imgLib" onchange="update()">
                 <option value="PNG">Librería PNG (Transparencias - img/h/)</option>
                 <option value="JPG">Librería JPG (Alta Res. - img/1000/)</option>
             </select>
 
-            <label for="l">3. Seleccionar Template Visual:</label>
+            <label for="l">3. Template Visual:</label>
             <select id="l" onchange="update()">
                 <option value="BPP_Layout_Claro">BPP Layout Claro (#8EA3B4)</option>
-                <option value="BPP_Layout_Oscuro">BPP Layout Oscuro</option>
             </select>
         </div>
 
         <div class="footer">
             Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.7.2-FINAL</span>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.8.0-FINAL</span>
         </div>
     </div>
 
     <script>
         var sdk = new window.sfdc.BlockSDK();
-
         function update() {
             var pos = document.getElementById('p').value;
             var lay = document.getElementById('l').value;
@@ -75,43 +74,34 @@
             var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
 
             var logic = "%%[" +
-                " SET @VersionMotor = 'v2.7.2-FINAL' " +
+                " SET @VersionMotor = 'v2.8.0-FINAL' " +
                 " SET @ItemIndex = " + pos +
                 " SET @LayoutName = '" + lay + "'" +
-                " SET @CampID = AttributeValue('Campaign_ID')" +
-                " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF" +
-                " SET @ColumnaSKU = Concat('SKU_', @ItemIndex)" +
-                " SET @SKU = Lookup('Campanas_Config_DE', @ColumnaSKU, 'Campaign_ID', @CampID)" +
-                " IF NOT Empty(@SKU) THEN" +
-                "    SET @Filas = LookupRows('Master_Products_DE', 'SKU', @SKU)" +
-                "    IF RowCount(@Filas) > 0 THEN" +
-                "        SET @Fila = Row(@Filas, 1)" +
-                "        SET @Nombre = Field(@Fila, 'NOMBRE')" +
-                "        SET @Precio = Field(@Fila, 'PRECIO_MESON')" +
-                "        SET @Marca = Field(@Fila, 'MARCA')" +
-                "        SET @UrlMarca = Concat('https://omni.implementos.cl/assets/images/marca_producto/', @Marca, '.png')" +
-                "        SET @Desc1 = Field(@Fila, 'DESCRIP_L1')" +
-                "        SET @Desc2 = Field(@Fila, 'DESCRIP_L2')" +
-                "        SET @Descripcion = Concat(@Desc1, ' ', @Desc2)" +
-                "        SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL')" +
-                "        SET @Imagen = Concat('" + imgPre + "', @SKU, '" + imgSuf + "')" +
-                "    ENDIF" +
-                " ENDIF" +
+                " SET @CampID = AttributeValue('Campaign_ID') " +
+                " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF " +
+                " SET @ColumnaSKU = Concat('SKU_', @ItemIndex) " +
+                " SET @SKU = Lookup('Campanas_Config_DE', @ColumnaSKU, 'Campaign_ID', @CampID) " +
+                " IF NOT Empty(@SKU) THEN " +
+                "    SET @Filas = LookupRows('Master_Products_DE', 'SKU', @SKU) " +
+                "    IF RowCount(@Filas) > 0 THEN " +
+                "        SET @Fila = Row(@Filas, 1) " +
+                "        SET @Nombre = Field(@Fila, 'NOMBRE') " +
+                "        SET @Precio = Field(@Fila, 'PRECIO_MESON') " +
+                "        SET @Marca = Field(@Fila, 'MARCA') " +
+                "        SET @Desc1 = Field(@Fila, 'DESCRIP_L1') " +
+                "        SET @Desc2 = Field(@Fila, 'DESCRIP_L2') " +
+                "        SET @Descripcion = Concat(@Desc1, ' ', @Desc2) " +
+                "        SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL') " +
+                "        SET @Imagen = Concat('" + imgPre + "', @SKU, '" + imgSuf + "') " +
+                "    ENDIF " +
+                " ENDIF " +
                 "]%%";
 
             var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ENDIF ]%%";
-
-            // INYECTAR CONTENIDO
             sdk.setContent(logic + render);
-
-            // LOGICA DE THUMBNAIL (AQUÍ ESTÁ)
             sdk.setAsset({
-                "name": "BPP_Selector_Active",
-                "metaData": {
-                    "thumbnail": { 
-                        "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" 
-                    }
-                }
+                "name": "BPP_Selector",
+                "metaData": { "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" } }
             });
         }
         update();
