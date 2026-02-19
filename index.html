@@ -28,16 +28,13 @@
     <div class="container">
         <div class="guide-section">
             <h3>Guía de Implementación</h3>
-            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> de la audiencia con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente de la posición seleccionada.</p>
-            <p><strong>Templates:</strong> Los diseños gráficos residen en <code>Content Builder > BPP</code>:</p>
-            <ul>
-                <li><strong>Claro:</strong> <code>BPP_Layout_Claro</code> (#8EA3B4)</li>
-                <li><strong>Oscuro:</strong> <code>BPP_Layout_Oscuro</code></li>
-            </ul>
+            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente.</p>
+            <p><strong>Templates:</strong> Los diseños residen en <code>Content Builder > BPP</code>.</p>
+            <p><strong>Marcas:</strong> Los logos se consumen de <code>LIBRERIAS_IMAGENES\MARCAS</code>.</p>
         </div>
 
         <div class="card">
-            <label for="p">1. Seleccionar Posición (Snowflake):</label>
+            <label for="p">1. Posición del Producto:</label>
             <select id="p" onchange="update()">
                 <option value="1">Producto 1 (SKU_1)</option>
                 <option value="2">Producto 2 (SKU_2)</option>
@@ -45,7 +42,7 @@
                 <option value="4">Producto 4 (SKU_4)</option>
             </select>
 
-            <label for="imgLib">2. Librería de Imágenes:</label>
+            <label for="imgLib">2. Juego de Librería:</label>
             <select id="imgLib" onchange="update()">
                 <option value="PNG">Librería PNG (Transparencias - img/h/)</option>
                 <option value="JPG">Librería JPG (Alta Res. - img/1000/)</option>
@@ -59,7 +56,7 @@
 
         <div class="footer">
             Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.8.0-FINAL</span>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.8.2-FINAL</span>
         </div>
     </div>
 
@@ -74,9 +71,9 @@
             var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
 
             var logic = "%%[" +
-                " SET @VersionMotor = 'v2.8.0-FINAL' " +
+                " SET @VersionMotor = 'v2.8.2-FINAL' " +
                 " SET @ItemIndex = " + pos +
-                " SET @LayoutName = '" + lay + "'" +
+                " SET @LayoutName = '" + lay + "' " +
                 " SET @CampID = AttributeValue('Campaign_ID') " +
                 " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF " +
                 " SET @ColumnaSKU = Concat('SKU_', @ItemIndex) " +
@@ -97,7 +94,9 @@
                 " ENDIF " +
                 "]%%";
 
-            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ENDIF ]%%";
+            // Fix: Cuádruple barra para que Salesforce reciba la barra invertida simple en el Preview
+            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\\\BPP\\\\', @LayoutName))) ENDIF ]%%";
+            
             sdk.setContent(logic + render);
             sdk.setAsset({
                 "name": "BPP_Selector",
