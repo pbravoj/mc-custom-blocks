@@ -5,34 +5,58 @@
     <title>BPP Selector - Implementos S.A.</title>
     <script src="blocksdk.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 15px; background-color: #f4f6f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
-        label { display: block; font-weight: bold; margin-bottom: 10px; font-size: 13px; }
-        select { width: 100%; padding: 10px; margin-bottom: 20px; }
-        .footer { text-align: center; font-size: 10px; color: #666; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
+        body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
+        .header { background-color: #ffffff; padding: 15px; border-bottom: 3px solid #0055aa; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .logo { height: 35px; margin-right: 15px; }
+        .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
+        .container { padding: 20px; }
+        .card { background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #d8dde6; margin-bottom: 20px; }
+        .guide-section { background-color: #eef4ff; border-left: 4px solid #0055aa; padding: 15px; margin-bottom: 20px; font-size: 12px; line-height: 1.6; }
+        .guide-section h3 { margin: 0 0 10px 0; font-size: 13px; color: #0055aa; text-transform: uppercase; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; }
+        select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-size: 14px; margin-bottom: 20px; }
+        .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; border-top: 1px solid #d8dde6; padding-top: 15px; line-height: 1.8; }
+        .ver-badge { background: #0055aa; color: white; padding: 1px 5px; border-radius: 3px; font-weight: bold; font-size: 10px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <label>1. Producto (Snowflake):</label>
-        <select id="p" onchange="update()">
-            <option value="1">Producto 1</option><option value="2">Producto 2</option>
-            <option value="3">Producto 3</option><option value="4">Producto 4</option>
-        </select>
-
-        <label>2. Librería de Imágenes:</label>
-        <select id="imgLib" onchange="update()">
-            <option value="PNG">Librería PNG (h/)</option>
-            <option value="JPG">Librería JPG (1000/)</option>
-        </select>
-
-        <label>3. Template Visual:</label>
-        <select id="l" onchange="update()">
-            <option value="BPP_Layout_Claro">BPP Layout Claro</option>
-        </select>
+    <div class="header">
+        <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
+        <h1 class="header-title">BPP (Bloque Producto Precio) Parámetros</h1>
     </div>
-    <div class="footer">
-        Implementos S.A. | Motor v2.8.8-ESTABLE
+
+    <div class="container">
+        <div class="guide-section">
+            <h3>Guía de Implementación</h3>
+            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente.</p>
+            <p><strong>Templates:</strong> Se asume que el layout reside en la carpeta raíz o subcarpeta <code>BPP</code>.</p>
+        </div>
+
+        <div class="card">
+            <label for="p">1. Seleccionar Posición (Snowflake):</label>
+            <select id="p" onchange="update()">
+                <option value="1">Producto 1 (SKU_1)</option>
+                <option value="2">Producto 2 (SKU_2)</option>
+                <option value="3">Producto 3 (SKU_3)</option>
+                <option value="4">Producto 4 (SKU_4)</option>
+            </select>
+
+            <label for="imgLib">2. Juego de Librería de Imágenes:</label>
+            <select id="imgLib" onchange="update()">
+                <option value="PNG">Librería PNG (Transparencias - img/h/)</option>
+                <option value="JPG">Librería JPG (Alta Res. - img/1000/)</option>
+            </select>
+
+            <label for="l">3. Seleccionar Template Visual:</label>
+            <select id="l" onchange="update()">
+                <option value="BPP_Layout_Claro">BPP Layout Claro (#8EA3B4)</option>
+            </select>
+        </div>
+
+        <div class="footer">
+            Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.8.9-ESTABLE</span>
+        </div>
     </div>
 
     <script>
@@ -46,6 +70,7 @@
             var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
 
             var logic = "%%[" +
+                " SET @VersionMotor = 'v2.8.9-ESTABLE' " +
                 " SET @ItemIndex = " + pos +
                 " SET @CampID = AttributeValue('Campaign_ID') " +
                 " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF " +
@@ -64,13 +89,16 @@
                 " ENDIF " +
                 "]%%";
 
-            // Volvemos a la ruta simple que Salesforce sí entiende
+            // Ruta simple para evitar el error de resolución de Salesforce
             var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
             
             sdk.setContent(logic + render);
+            sdk.setAsset({
+                "name": "BPP_Selector",
+                "metaData": { "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" } }
+            });
         }
         update();
     </script>
 </body>
 </html>
-
