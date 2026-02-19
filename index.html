@@ -9,18 +9,12 @@
         .header { background-color: #ffffff; padding: 15px; border-bottom: 3px solid #0055aa; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .logo { height: 35px; margin-right: 15px; }
         .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
-        
         .container { padding: 20px; }
         .card { background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #d8dde6; margin-bottom: 20px; }
-        
-        /* SECCIÓN DE GUÍA */
         .guide-section { background-color: #eef4ff; border-left: 4px solid #0055aa; padding: 15px; margin-bottom: 20px; font-size: 12px; line-height: 1.6; }
-        .guide-section h3 { margin: 0 0 10px 0; font-size: 13px; color: #0055aa; text-transform: uppercase; letter-spacing: 0.5px; }
-        
+        .guide-section h3 { margin: 0 0 10px 0; font-size: 13px; color: #0055aa; text-transform: uppercase; }
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; }
         select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-size: 14px; margin-bottom: 20px; }
-        
-        /* FOOTER DOBLE LÍNEA */
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; border-top: 1px solid #d8dde6; padding-top: 15px; line-height: 1.8; }
         .ver-badge { background: #0055aa; color: white; padding: 1px 5px; border-radius: 3px; font-weight: bold; font-size: 10px; }
     </style>
@@ -36,9 +30,7 @@
         <div class="guide-section">
             <h3>Guía de Implementación</h3>
             <p><strong>Mapeo de Datos:</strong> Vinculación vía <code>Campaign_ID</code> hacia <code>Campanas_Config_DE</code>.</p>
-            <p><strong>Librerías de Imagen:</strong><br>
-               - <strong>PNG:</strong> Transparencias (img/h/) para fondos de color.<br>
-               - <strong>JPG:</strong> Alta resolución (img/1000/) para fondos blancos.</p>
+            <p><strong>Librerías de Imagen:</strong> PNG (img/h/) para transparencias y JPG (img/1000/) para alta res.</p>
         </div>
 
         <div class="card">
@@ -67,7 +59,7 @@
 
         <div class="footer">
             Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.7.0-FINAL</span>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.7.2-FINAL</span>
         </div>
     </div>
 
@@ -79,12 +71,11 @@
             var lay = document.getElementById('l').value;
             var lib = document.getElementById('imgLib').value;
 
-            // Lógica de construcción de URLs de imagen
             var imgPre = (lib === 'PNG') ? 'https://images.implementos.cl/img/h/' : 'https://images.implementos.cl/img/1000/';
             var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
 
             var logic = "%%[" +
-                " SET @VersionMotor = 'v2.7.0-FINAL' " +
+                " SET @VersionMotor = 'v2.7.2-FINAL' " +
                 " SET @ItemIndex = " + pos +
                 " SET @LayoutName = '" + lay + "'" +
                 " SET @CampID = AttributeValue('Campaign_ID')" +
@@ -110,12 +101,16 @@
 
             var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ENDIF ]%%";
 
+            // INYECTAR CONTENIDO
             sdk.setContent(logic + render);
 
+            // LOGICA DE THUMBNAIL (AQUÍ ESTÁ)
             sdk.setAsset({
                 "name": "BPP_Selector_Active",
                 "metaData": {
-                    "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" }
+                    "thumbnail": { 
+                        "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" 
+                    }
                 }
             });
         }
@@ -123,5 +118,3 @@
     </script>
 </body>
 </html>
-
-
