@@ -28,9 +28,9 @@
     <div class="container">
         <div class="guide-section">
             <h3>Guía de Implementación</h3>
-            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente.</p>
-            <p><strong>Templates:</strong> Los diseños residen en <code>Content Builder > BPP</code>.</p>
-            <p><strong>Marcas:</strong> Los logos se consumen de <code>LIBRERIAS_IMAGENES\MARCAS</code>.</p>
+            <p><strong>Mapeo de Datos:</strong> Mapeo vía <code>Campaign_ID</code> hacia <code>Campanas_Config_DE</code>.</p>
+            <p><strong>Ruta de Templates:</strong> <code>Content Builder > BPP</code></p>
+            <p><strong>Librería de Marcas:</strong> <code>LIBRERIAS_IMAGENES\MARCAS</code></p>
         </div>
 
         <div class="card">
@@ -42,7 +42,7 @@
                 <option value="4">Producto 4 (SKU_4)</option>
             </select>
 
-            <label for="imgLib">2. Juego de Librería:</label>
+            <label for="imgLib">2. Librería de Imágenes:</label>
             <select id="imgLib" onchange="update()">
                 <option value="PNG">Librería PNG (Transparencias - img/h/)</option>
                 <option value="JPG">Librería JPG (Alta Res. - img/1000/)</option>
@@ -56,7 +56,7 @@
 
         <div class="footer">
             Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.8.2-FINAL</span>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.8.3-FINAL</span>
         </div>
     </div>
 
@@ -71,7 +71,7 @@
             var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
 
             var logic = "%%[" +
-                " SET @VersionMotor = 'v2.8.2-FINAL' " +
+                " SET @VersionMotor = 'v2.8.3-FINAL' " +
                 " SET @ItemIndex = " + pos +
                 " SET @LayoutName = '" + lay + "' " +
                 " SET @CampID = AttributeValue('Campaign_ID') " +
@@ -94,8 +94,8 @@
                 " ENDIF " +
                 "]%%";
 
-            // Fix: Cuádruple barra para que Salesforce reciba la barra invertida simple en el Preview
-            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\\\BPP\\\\', @LayoutName))) ENDIF ]%%";
+            // CORRECCIÓN DE RUTA: Usamos barra simple escapada una sola vez para que SFMC reciba la ruta limpia.
+            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('Content Builder\\BPP\\', @LayoutName))) ENDIF ]%%";
             
             sdk.setContent(logic + render);
             sdk.setAsset({
