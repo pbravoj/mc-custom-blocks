@@ -11,7 +11,7 @@
         .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
         .container { padding: 20px; }
         .card { background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #d8dde6; margin-bottom: 20px; }
-        .guide-section { background-color: #eef4ff; border-left: 4px solid #0055aa; padding: 15px; margin-bottom: 20px; font-size: 12px; line-height: 1.6; }
+        .guide-section { background-color: #eef4ff; border-left: 4px solid #0055aa; padding: 15px; margin-bottom: 20px; font-size: 12px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; }
         select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 20px; }
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; border-top: 1px solid #d8dde6; padding-top: 15px; }
@@ -21,40 +21,35 @@
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">BPP (Bloque Producto Precio) Parámetros</h1>
+        <h1 class="header-title">BPP Parámetros</h1>
     </div>
 
     <div class="container">
         <div class="guide-section">
-            <h3>Guía de Implementación</h3>
-            <p><strong>Ruta de Templates:</strong> Se asume carpeta <code>BPP</code> en la raíz.</p>
-            <p><strong>Marcas:</strong> Carpeta <code>LIBRERIAS_IMAGENES/MARCAS</code>.</p>
+            <p><strong>Ruta:</strong> Si el bloque falla, verifica que el archivo esté en la raíz de Content Builder dentro de la carpeta <code>BPP</code>.</p>
         </div>
 
         <div class="card">
-            <label>1. Posición del Producto:</label>
+            <label>1. Posición:</label>
             <select id="p" onchange="update()">
-                <option value="1">Producto 1 (SKU_1)</option>
-                <option value="2">Producto 2 (SKU_2)</option>
-                <option value="3">Producto 3 (SKU_3)</option>
-                <option value="4">Producto 4 (SKU_4)</option>
+                <option value="1">Producto 1</option><option value="2">Producto 2</option>
+                <option value="3">Producto 3</option><option value="4">Producto 4</option>
             </select>
 
-            <label>2. Librería de Imágenes:</label>
+            <label>2. Librería:</label>
             <select id="imgLib" onchange="update()">
-                <option value="PNG">Librería PNG (img/h/)</option>
-                <option value="JPG">Librería JPG (img/1000/)</option>
+                <option value="PNG">Librería PNG (Transparente)</option>
+                <option value="JPG">Librería JPG (Fondo Blanco)</option>
             </select>
 
-            <label>3. Template Visual:</label>
+            <label>3. Template:</label>
             <select id="l" onchange="update()">
                 <option value="BPP_Layout_Claro">BPP Layout Claro (#8EA3B4)</option>
             </select>
         </div>
 
         <div class="footer">
-            Implementos S.A. | Arquitectura de Capas v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.8.5-FINAL</span>
+            Implementos S.A. | <span class="ver-badge">Motor: v2.8.6-FINAL</span>
         </div>
     </div>
 
@@ -67,11 +62,13 @@
 
             var imgPre = (lib === 'PNG') ? 'https://images.implementos.cl/img/h/' : 'https://images.implementos.cl/img/1000/';
             var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
+            
+            // CONSTRUIMOS LA RUTA AQUÍ (Probamos con la ruta de sistema 'Content Builder/BPP/...')
+            var fullPath = "Content Builder/BPP/" + lay;
 
             var logic = "%%[" +
-                " SET @VersionMotor = 'v2.8.5-FINAL' " +
+                " SET @VersionMotor = 'v2.8.6-FINAL' " +
                 " SET @ItemIndex = " + pos +
-                " SET @LayoutName = '" + lay + "' " +
                 " SET @CampID = AttributeValue('Campaign_ID') " +
                 " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF " +
                 " SET @ColumnaSKU = Concat('SKU_', @ItemIndex) " +
@@ -83,17 +80,14 @@
                 "        SET @Nombre = Field(@Fila, 'NOMBRE') " +
                 "        SET @Precio = Field(@Fila, 'PRECIO_MESON') " +
                 "        SET @Marca = Field(@Fila, 'MARCA') " +
-                "        SET @Desc1 = Field(@Fila, 'DESCRIP_L1') " +
-                "        SET @Desc2 = Field(@Fila, 'DESCRIP_L2') " +
-                "        SET @Descripcion = Concat(@Desc1, ' ', @Desc2) " +
                 "        SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL') " +
                 "        SET @Imagen = Concat('" + imgPre + "', @SKU, '" + imgSuf + "') " +
                 "    ENDIF " +
                 " ENDIF " +
                 "]%%";
 
-            // RUTA CORREGIDA: Sin "Content Builder"
-            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName(Concat('BPP/', @LayoutName))) ENDIF ]%%";
+            // Inyectamos la ruta directamente como un String
+            var render = "%%[ IF NOT Empty(@SKU) THEN SET @Path = '" + fullPath + "' OUTPUT(ContentBlockByName(@Path)) ENDIF ]%%";
             
             sdk.setContent(logic + render);
             sdk.setAsset({
@@ -105,4 +99,3 @@
     </script>
 </body>
 </html>
-
