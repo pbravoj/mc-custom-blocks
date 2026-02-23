@@ -2,7 +2,7 @@
     
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.3</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.4</span></h3>
     </div>
 
     <form id="bpp-config-form">
@@ -32,12 +32,15 @@
             </div>
             
             <div id="glosa_container" style="font-size: 10px; color: #666; background: #f0f7ff; padding: 8px; border-radius: 4px; border-left: 3px solid #0055aa;">
-                <strong>Paramétrica:</strong> Tomados de 'Campanas_Config_DE'.
+                <strong>Paramétrica:</strong> SKU tomados de 'Campanas_Config_DE'.
             </div>
 
             <div id="manual_input_container" style="display:none; margin-top: 10px;">
-                <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manualmente:</label>
-                <input type="text" id="manual_sku" name="manual_sku" placeholder="EJ: WUXACC0002" style="width: 100%; padding: 8px; border: 1px solid #e11d48; border-radius: 4px; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
+                <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manual:</label>
+                <div style="display: flex; gap: 5px;">
+                  <input type="text" id="manual_sku" name="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
+                  <button type="button" id="btn_validar" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">VER IMAGEN</button>
+                </div>
             </div>
         </div>
 
@@ -70,9 +73,9 @@
                 <span id="preview_url_sku">https://images.implementos.cl/img/h/@SKU-1.png</span>
             </div>
 
-            <div id="live_preview_container" style="display:none; text-align: center; background: #f0f0f0; border: 1px dashed #ccc; padding: 10px; border-radius: 4px;">
-                <label style="font-size: 9px; font-weight: bold; color: #666; display: block; margin-bottom: 5px;">LIVE PREVIEW (REAL TIME):</label>
-                <img id="live_sku_img" src="" style="max-height: 120px; width: auto; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));" onerror="this.src='https://via.placeholder.com/120x120?text=Imagen+No+Encontrada'">
+            <div id="live_preview_container" style="display:none; text-align: center; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+                <img id="live_sku_img" src="" style="max-height: 120px; width: auto; display: none;">
+                <div id="img_status" style="font-size: 10px; color: #888;">Haga clic en 'Ver Imagen' para previsualizar.</div>
             </div>
         </div>
 
@@ -105,7 +108,7 @@
             </div>
         </div>
 
-        <button type="button" style="width: 100%; padding: 12px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;">Generar Código v3.6.3</button>
+        <button type="button" style="width: 100%; padding: 12px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;">Generar Código v3.6.4</button>
     </form>
 </div>
 
@@ -115,13 +118,12 @@
         var glosa = document.getElementById('glosa_container');
         var manualInput = document.getElementById('manual_input_container');
         var livePreview = document.getElementById('live_preview_container');
-        var manualSkuVal = document.getElementById('manual_sku').value.trim() || "";
+        var manualSkuVal = document.getElementById('manual_sku').value.trim();
 
-        // 1. Manejo de Glosas y Visibilidad
         if (type === 'manual') {
-            glosa.innerHTML = "<strong>Manual:</strong> Se define el SKU de forma estática.";
+            glosa.innerHTML = "<strong>Manual:</strong> Definición de SKU estático.";
             manualInput.style.display = 'block';
-            livePreview.style.display = (manualSkuVal !== "") ? 'block' : 'none';
+            livePreview.style.display = 'block';
         } else {
             glosa.innerHTML = (type === 'parametric') ? "<strong>Paramétrica:</strong> Desde 'Campanas_Config_DE'." : "<strong>Recomendación:</strong> SKU desde la audiencia.";
             manualInput.style.display = 'none';
@@ -129,29 +131,43 @@
             manualSkuVal = "@SKU";
         }
 
-        // 2. Composición de URL SKU
         var format = document.querySelector('input[name="img_format"]:checked').value;
         var size = document.getElementById('sku_img_size').value;
         var version = document.getElementById('sku_img_version').value;
-        var finalSkuUrl = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
-        
-        document.getElementById('preview_url_sku').innerText = finalSkuUrl;
+        var finalUrl = "https://images.implementos.cl/img/" + size + (manualSkuVal || "@SKU") + version + "." + format;
+        document.getElementById('preview_url_sku').innerText = finalUrl;
 
-        // 3. Update Live Image (solo si manual)
-        if (type === 'manual' && manualSkuVal !== "") {
-            document.getElementById('live_sku_img').src = finalSkuUrl;
-        }
-
-        // 4. Preview URL Logo
         var l_v = document.getElementById('logo_v').value;
         var l_p = document.getElementById('logo_p').value;
         document.getElementById('preview_url_logo').innerText = "https://images.implementos.cl/marcas/h/logo_@MARCA" + l_v + l_p + ".png";
     }
 
+    function loadLiveImage() {
+        var url = document.getElementById('preview_url_sku').innerText;
+        var img = document.getElementById('live_sku_img');
+        var status = document.getElementById('img_status');
+        
+        if (url.includes("@SKU")) {
+            alert("Ingrese un SKU real en modo Manual para validar.");
+            return;
+        }
+
+        status.innerText = "Cargando...";
+        img.style.display = "none";
+        img.src = url;
+        img.onload = function() { 
+          img.style.display = "inline-block"; 
+          status.innerText = "";
+        };
+        img.onerror = function() { 
+          status.innerText = "Error: No se encontró la imagen."; 
+          img.style.display = "none";
+        };
+    }
+
     function updateSizes() {
         var format = document.querySelector('input[name="img_format"]:checked').value;
         var sizeSelect = document.getElementById('sku_img_size');
-        var currentVal = sizeSelect.value;
         sizeSelect.innerHTML = "";
         var options = (format === 'png') ? [['h/', 'h'], ['m/', 'm'], ['s/', 's']] : [['1000/', '1000'], ['600/', '600'], ['350/', '350']];
         options.forEach(opt => {
