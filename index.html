@@ -1,14 +1,66 @@
-<div class="motor-container" style="font-family: 'Inter', sans-serif; max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box;">
-    
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor BPP v3.6.5 - Salesforce Ready</title>
+    <style>
+        body { background-color: #e5e7eb; padding: 20px; margin: 0; }
+        .motor-container {
+            font-family: 'Inter', -apple-system, sans-serif;
+            max-width: 680px;
+            margin: auto;
+            padding: 15px;
+            background: #f4f6f9;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .section-box {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .preview-box {
+            background: #333;
+            color: #00ff00;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 9px;
+            word-break: break-all;
+            border-left: 4px solid #666;
+            margin-top: 5px;
+        }
+        select, input { border: 1px solid #ccc; border-radius: 4px; }
+        button { transition: background 0.3s; }
+        button:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="motor-container">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.4</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.5</span></h3>
     </div>
 
     <form id="bpp-config-form">
+
+        <div class="section-box" style="border-left: 5px solid #0055aa;">
+            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">0. Selección de Template (Directorio BPP)</label>
+            <select id="master_layout" name="master_layout" style="width: 100%; padding: 8px; font-size: 11px; font-weight: bold; background: #f0f7ff;">
+                <option value="BPP/BPP_Layout_Claro" selected>BPP/BPP_Layout_Claro (Oficial Azul)</option>
+                <option value="BPP/BPP_Layout_Oscuro">BPP/BPP_Layout_Oscuro (Carbono)</option>
+                <option value="BPP/BPP_Layout_Promo">BPP/BPP_Layout_Promo (Ofertas)</option>
+            </select>
+        </div>
         
-        <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
-            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 12px; color: #0055aa; text-transform: uppercase;">1. Origen de Datos y Selección SKU</label>
+        <div class="section-box">
+            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">1. Origen de Datos y Selección SKU</label>
             <div style="display: flex; gap: 15px; margin-bottom: 10px;">
                 <div style="flex: 1;">
                     <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Tipo de Origen:</label>
@@ -20,7 +72,7 @@
                 </div>
                 <div style="flex: 1;">
                     <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Slot Destino:</label>
-                    <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 4px 8px; border-radius: 4px; font-size: 11px; border: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 4px 8px; border-radius: 4px; font-size: 10px; border: 1px solid #ddd;">
                         <label><input type="radio" name="sku_slot" value="SKU1" checked onchange="updateUI()"> 1</label>
                         <label><input type="radio" name="sku_slot" value="SKU2" onchange="updateUI()"> 2</label>
                         <label><input type="radio" name="sku_slot" value="SKU3" onchange="updateUI()"> 3</label>
@@ -32,20 +84,20 @@
             </div>
             
             <div id="glosa_container" style="font-size: 10px; color: #666; background: #f0f7ff; padding: 8px; border-radius: 4px; border-left: 3px solid #0055aa;">
-                <strong>Paramétrica:</strong> SKU tomados de 'Campanas_Config_DE'.
+                <strong>Paramétrica:</strong> Tomados de 'Campanas_Config_DE'.
             </div>
 
             <div id="manual_input_container" style="display:none; margin-top: 10px;">
                 <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manual:</label>
                 <div style="display: flex; gap: 5px;">
-                  <input type="text" id="manual_sku" name="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
-                  <button type="button" id="btn_validar" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; cursor: pointer;">VER IMAGEN</button>
+                  <input type="text" id="manual_sku" name="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; padding: 8px; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
+                  <button type="button" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold;">VER IMAGEN</button>
                 </div>
             </div>
         </div>
 
-        <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
-            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 12px; color: #0055aa; text-transform: uppercase;">2. Juego de Librerías (URL Foto SKU)</label>
+        <div class="section-box">
+            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">2. Juego de Librerías (URL Foto SKU)</label>
             <div style="display: flex; gap: 15px; margin-bottom: 10px;">
                 <div style="flex: 1;">
                     <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Formato:</label>
@@ -68,19 +120,19 @@
                 </div>
             </div>
 
-            <div style="background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666; margin-bottom: 10px;">
+            <div class="preview-box">
                 <span style="color: #aaa;">ENDPOINT GENERADO:</span><br>
                 <span id="preview_url_sku">https://images.implementos.cl/img/h/@SKU-1.png</span>
             </div>
 
-            <div id="live_preview_container" style="display:none; text-align: center; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+            <div id="live_preview_container" style="display:none; text-align: center; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 4px; margin-top: 10px;">
                 <img id="live_sku_img" src="" style="max-height: 120px; width: auto; display: none;">
                 <div id="img_status" style="font-size: 10px; color: #888;">Haga clic en 'Ver Imagen' para previsualizar.</div>
             </div>
         </div>
 
-        <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
-            <label style="font-weight: 900; display: block; margin-bottom: 10px; font-size: 12px; color: #0055aa; text-transform: uppercase;">3. Configuración Logo Marca</label>
+        <div class="section-box">
+            <label style="font-weight: 900; display: block; margin-bottom: 10px; font-size: 11px; color: #0055aa; text-transform: uppercase;">3. Configuración Logo Marca</label>
             <div style="display: flex; gap: 15px; margin-bottom: 10px;">
                 <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Vertical / Tamaño:</label>
                     <div style="display: flex; gap: 5px;">
@@ -95,20 +147,20 @@
                     </div>
                 </div>
             </div>
-            <div style="background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666;">
+            <div class="preview-box">
                 <span id="preview_url_logo">https://images.implementos.cl/marcas/h/logo_@MARCA-1_C.png</span>
             </div>
         </div>
 
-        <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
-            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 12px; color: #0055aa; text-transform: uppercase;">4. SKU Imagen</label>
+        <div class="section-box">
+            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">4. SKU Imagen</label>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Elevación SKU (px):</label><input type="number" name="pop_out_offset" value="50" style="width: 100%; padding: 6px; font-size: 11px; border: 1px solid #0055aa; font-weight: bold; color: #0055aa;" oninput="updateUI()"></div>
-                <div style="flex: 1; font-size: 10px; color: #888;">Z-Index: <select name="logo_z_index" style="padding: 2px; font-size: 10px;" onchange="updateUI()"><option value="15">Encima</option><option value="5">Detrás</option></select></div>
+                <div style="flex: 1; font-size: 10px; color: #888;">Capa: <select name="logo_z_index" style="padding: 2px; font-size: 10px;" onchange="updateUI()"><option value="15">Encima</option><option value="5">Detrás</option></select></div>
             </div>
         </div>
 
-        <button type="button" style="width: 100%; padding: 12px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;">Generar Código v3.6.4</button>
+        <button type="button" style="width: 100%; padding: 12px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; text-transform: uppercase;">Generar AMPScript v3.6.5</button>
     </form>
 </div>
 
@@ -121,7 +173,7 @@
         var manualSkuVal = document.getElementById('manual_sku').value.trim();
 
         if (type === 'manual') {
-            glosa.innerHTML = "<strong>Manual:</strong> Definición de SKU estático.";
+            glosa.innerHTML = "<strong>Manual:</strong> Se define el SKU de forma estática.";
             manualInput.style.display = 'block';
             livePreview.style.display = 'block';
         } else {
@@ -146,23 +198,10 @@
         var url = document.getElementById('preview_url_sku').innerText;
         var img = document.getElementById('live_sku_img');
         var status = document.getElementById('img_status');
-        
-        if (url.includes("@SKU")) {
-            alert("Ingrese un SKU real en modo Manual para validar.");
-            return;
-        }
-
-        status.innerText = "Cargando...";
-        img.style.display = "none";
-        img.src = url;
-        img.onload = function() { 
-          img.style.display = "inline-block"; 
-          status.innerText = "";
-        };
-        img.onerror = function() { 
-          status.innerText = "Error: No se encontró la imagen."; 
-          img.style.display = "none";
-        };
+        if (url.includes("@SKU")) { alert("Ingrese un SKU real en modo Manual."); return; }
+        status.innerText = "Cargando..."; img.style.display = "none"; img.src = url;
+        img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
+        img.onerror = function() { status.innerText = "Error: Imagen no encontrada."; img.style.display = "none"; };
     }
 
     function updateSizes() {
@@ -178,3 +217,6 @@
 
     window.onload = function() { updateSizes(); updateUI(); };
 </script>
+
+</body>
+</html>
