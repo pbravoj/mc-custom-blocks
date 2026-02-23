@@ -2,7 +2,7 @@
     
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.5</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.6</span></h3>
     </div>
 
     <form id="bpp-config-form">
@@ -18,8 +18,8 @@
         
         <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
             <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 12px; color: #0055aa; text-transform: uppercase;">1. Origen de Datos y Selección SKU</label>
-            <div style="display: flex; gap: 15px; margin-bottom: 10px;">
-                <div style="flex: 1;">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1.2;">
                     <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Tipo de Origen:</label>
                     <select id="data_source_type" name="data_source_type" style="width: 100%; padding: 6px; font-size: 11px;" onchange="updateUI()">
                         <option value="parametric" selected>1. Paramétrico</option>
@@ -29,7 +29,7 @@
                 </div>
                 <div style="flex: 1;">
                     <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Slot Destino:</label>
-                    <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 4px 8px; border-radius: 4px; font-size: 11px; border: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 5px; border-radius: 4px; font-size: 10px; border: 1px solid #ddd;">
                         <label><input type="radio" name="sku_slot" value="SKU1" checked onchange="updateUI()"> 1</label>
                         <label><input type="radio" name="sku_slot" value="SKU2" onchange="updateUI()"> 2</label>
                         <label><input type="radio" name="sku_slot" value="SKU3" onchange="updateUI()"> 3</label>
@@ -40,13 +40,134 @@
                 </div>
             </div>
             
-            <div id="glosa_container" style="font-size: 10px; color: #666; background: #f0f7ff; padding: 8px; border-radius: 4px; border-left: 3px solid #0055aa;">
+            <div id="glosa_container" style="font-size: 10px; color: #666; background: #f0f7ff; padding: 8px; border-radius: 4px; border-left: 3px solid #0055aa; margin-bottom: 5px;">
                 <strong>Paramétrica:</strong> SKU tomados de 'Campanas_Config_DE'.
             </div>
 
             <div id="manual_input_container" style="display:none; margin-top: 10px;">
                 <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manual:</label>
                 <div style="display: flex; gap: 5px;">
-                  <input type="text" id="manual_sku" name="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; text-izes(); updateUI(); };
-</script>
+                  <input type="text" id="manual_sku" name="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
+                  <button type="button" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold;">VALIDAR FOTO</button>
+                </div>
+            </div>
+        </div>
 
+        <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
+            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 12px; color: #0055aa; text-transform: uppercase;">2. Juego de Librerías (URL Foto SKU)</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Formato:</label>
+                    <div style="display: flex; gap: 8px; background: #f9f9f9; padding: 5px; border-radius: 4px; border: 1px solid #eee;">
+                        <label style="font-size: 11px;"><input type="radio" name="img_format" value="png" checked onclick="updateSizes(); updateUI();"> PNG</label>
+                        <label style="font-size: 11px;"><input type="radio" name="img_format" value="jpg" onclick="updateSizes(); updateUI();"> JPG</label>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Tamaño:</label>
+                    <select id="sku_img_size" name="sku_img_size" style="width: 100%; padding: 6px; font-size: 11px;" onchange="updateUI()">
+                        <option value="h/">h (Original)</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Foto (1-9):</label>
+                    <select id="sku_img_version" name="sku_img_version" style="width: 100%; padding: 6px; font-size: 11px;" onchange="updateUI()">
+                        <option value="-1" selected>v-1</option>
+                        <option value="-2">v-2</option><option value="-3">v-3</option><option value="-4">v-4</option>
+                        <option value="-5">v-5</option><option value="-6">v-6</option><option value="-7">v-7</option>
+                        <option value="-8">v-8</option><option value="-9">v-9</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666; margin-bottom: 8px;">
+                <span id="preview_url_sku">https://images.implementos.cl/img/h/@SKU-1.png</span>
+            </div>
+
+            <div id="live_preview_container" style="display:none; text-align: center; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+                <img id="live_sku_img" src="" style="max-height: 100px; width: auto; display: none;">
+                <div id="img_status" style="font-size: 10px; color: #888;">Presione 'VALIDAR FOTO' para previsualizar.</div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
+            <label style="font-weight: 900; display: block; margin-bottom: 10px; font-size: 12px; color: #0055aa; text-transform: uppercase;">3. Configuración Logo Marca</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 10px; font-weight: bold; display: block;">Posición Y (px):</label>
+                    <input type="number" name="logo_y_offset" value="0" style="width: 100%; padding: 5px; font-size: 11px;" oninput="updateUI()">
+                </div>
+                <div style="flex: 1.5;">
+                    <label style="font-size: 10px; font-weight: bold; display: block;">Tamaño Logo (%):</label>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="range" min="10" max="45" value="22" style="flex: 1;" oninput="logo_size_val.value = this.value; updateUI()">
+                        <input type="number" id="logo_size_val" value="22" style="width: 35px; font-size: 11px; text-align: center;" readonly>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 10px; font-weight: bold; display: block;">Variante (1-9):</label>
+                    <select id="logo_v" name="sufijo1" style="width: 100%; padding: 5px; font-size: 11px;" onchange="updateUI()">
+                        <option value="-1">V-1</option><option value="-2">V-2</option><option value="-3">V-3</option>
+                        <option value="-4">V-4</option><option value="-5">V-5</option><option value="-6">V-6</option>
+                        <option value="-7">V-7</option><option value="-8">V-8</option><option value="-9">V-9</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;">
+                    <label style="font-size: 10px; font-weight: bold; display: block;">Pantone:</label>
+                    <select id="logo_p" name="sufijo2" style="width: 100%; padding: 5px; font-size: 11px;" onchange="updateUI()">
+                        <option value="_C" selected>Color (C)</option>
+                        <option value="_B">Blanco (B)</option>
+                        <option value="_N">Negro (N)</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 10px; font-weight: bold; display: block;">Capa (Z):</label>
+                    <select name="logo_z_index" style="width: 100%; padding: 5px; font-size: 11px;" onchange="updateUI()">
+                        <option value="15">Z: Encima</option>
+                        <option value="5">Z: Detrás</option>
+                    </select>
+                </div>
+            </div>
+            <div style="background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666;">
+                <span id="preview_url_logo">https://images.implementos.cl/marcas/h/logo_@MARCA-1_C.png</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
+            <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 12px; color: #0055aa; text-transform: uppercase;">4. SKU Imagen</label>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Elevación SKU (px):</label><input type="number" name="pop_out_offset" value="50" style="width: 100%; padding: 6px; font-size: 11px; border: 1px solid #0055aa; font-weight: bold; color: #0055aa;" oninput="updateUI()"></div>
+                <div style="flex: 1.5; font-size: 10px; color: #888;">Ajuste el valor para el desborde superior de la imagen.</div>
+            </div>
+        </div>
+
+        <button type="button" style="width: 100%; padding: 12px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;">Generar Código v3.6.6</button>
+    </form>
+</div>
+
+<script>
+    function updateUI() {
+        var type = document.getElementById('data_source_type').value;
+        var glosa = document.getElementById('glosa_container');
+        var manualInput = document.getElementById('manual_input_container');
+        var livePreview = document.getElementById('live_preview_container');
+        var manualSkuVal = document.getElementById('manual_sku').value.trim();
+
+        if (type === 'manual') {
+            glosa.innerHTML = "<strong>Manual:</strong> Se define el SKU de forma estática.";
+            manualInput.style.display = 'block';
+            livePreview.style.display = 'block';
+        } else {
+            glosa.innerHTML = (type === 'parametric') ? "<strong>Paramétrica:</strong> Desde 'Campanas_Config_DE'." : "<strong>Recomendación:</strong> SKU desde la audiencia.";
+            manualInput.style.display = 'none';
+            livePreview.style.display = 'none';
+            manualSkuVal = "@SKU";
+        }
+
+        var format = document.querySelector('input[name="img_format"]:checked').value;
+        var size = document.getElementById('sku_img_size').value;
+        var version = document.getElementById('sku_img_version').value;
+        var finalUrl = "https://images.implementos.cl/img/" + size + (manualSkuVal || "@SKU") + version + "." + format;
+        document.getElementById('preview_url_sku').innerText = finalUrl;
