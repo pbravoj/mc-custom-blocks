@@ -1,104 +1,49 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <title>BPP Selector - Implementos S.A.</title>
-    <script src="blocksdk.js"></script>
-    <style>
-        body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
-        .header { background-color: #ffffff; padding: 15px; border-bottom: 3px solid #0055aa; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .logo { height: 35px; margin-right: 15px; }
-        .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
-        .container { padding: 20px; }
-        .card { background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #d8dde6; margin-bottom: 20px; }
-        .guide-section { background-color: #eef4ff; border-left: 4px solid #0055aa; padding: 15px; margin-bottom: 20px; font-size: 12px; line-height: 1.6; }
-        .guide-section h3 { margin: 0 0 10px 0; font-size: 13px; color: #0055aa; text-transform: uppercase; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; }
-        select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-size: 14px; margin-bottom: 20px; }
-        .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; border-top: 1px solid #d8dde6; padding-top: 15px; line-height: 1.8; }
-        .ver-badge { background: #0055aa; color: white; padding: 1px 5px; border-radius: 3px; font-weight: bold; font-size: 10px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">BPP (Bloque Producto Precio) Parámetros</h1>
+<div class="motor-container" style="font-family: 'Inter', sans-serif; max-width: 850px; margin: auto; padding: 20px; background: #f4f6f9; border-radius: 15px;">
+    
+    <h2 style="text-align: center; color: #333;">Configurador Maestro BPP v3.4</h2>
+    
+    <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 10px; border: 1px solid #ddd;">
+        <label style="font-weight: bold; display: block; margin-bottom: 5px;">1. Seleccionar Template Maestro:</label>
+        <select id="template_select" name="template_select" style="width: 100%; padding: 10px; border-radius: 5px;">
+            <option value="BPP_Layout_Claro_v3.4.0" selected>BPP Layout Claro - Escala (Full Control)</option>
+            <option value="BPP_Layout_Oscuro_v3.4.0">BPP Layout Oscuro - Escala (Full Control)</option>
+        </select>
     </div>
 
-    <div class="container">
-        <div class="guide-section">
-            <h3>Guía de Implementación</h3>
-            <p><strong>Mapeo de Datos:</strong> Este bloque vincula el <code>Campaign_ID</code> con la tabla <code>Campanas_Config_DE</code> para extraer el SKU correspondiente.</p>
-            <p><strong>Templates:</strong> Se asume que el layout reside en la carpeta raíz o subcarpeta <code>BPP</code>.</p>
-        </div>
-
-        <div class="card">
-            <label for="p">1. Seleccionar Posición (Snowflake):</label>
-            <select id="p" onchange="update()">
-                <option value="1">Producto 1 (SKU_1)</option>
-                <option value="2">Producto 2 (SKU_2)</option>
-                <option value="3">Producto 3 (SKU_3)</option>
-                <option value="4">Producto 4 (SKU_4)</option>
-            </select>
-
-            <label for="imgLib">2. Juego de Librería de Imágenes:</label>
-            <select id="imgLib" onchange="update()">
-                <option value="PNG">Librería PNG (Transparencias - img/h/)</option>
-                <option value="JPG">Librería JPG (Alta Res. - img/1000/)</option>
-            </select>
-
-            <label for="l">3. Seleccionar Template Visual:</label>
-            <select id="l" onchange="update()">
-                <option value="BPP_Layout_Claro">BPP Layout Claro (#8EA3B4)</option>
-            </select>
-        </div>
-
-        <div class="footer">
-            Implementos S.A. | Arquitectura de Capas Segura v2.0<br>
-            Implementos S.A. | <span class="ver-badge">Motor: v2.8.9-ESTABLE</span>
-        </div>
-    </div>
-
-    <script>
-        var sdk = new window.sfdc.BlockSDK();
-        function update() {
-            var pos = document.getElementById('p').value;
-            var lay = document.getElementById('l').value;
-            var lib = document.getElementById('imgLib').value;
-
-            var imgPre = (lib === 'PNG') ? 'https://images.implementos.cl/img/h/' : 'https://images.implementos.cl/img/1000/';
-            var imgSuf = (lib === 'PNG') ? '-1.png' : '-1.jpg';
-
-            var logic = "%%[" +
-                " SET @VersionMotor = 'v2.8.9-ESTABLE' " +
-                " SET @ItemIndex = " + pos +
-                " SET @CampID = AttributeValue('Campaign_ID') " +
-                " IF Empty(@CampID) THEN SET @CampID = 'SKU_PARAMETRICO' ENDIF " +
-                " SET @ColumnaSKU = Concat('SKU_', @ItemIndex) " +
-                " SET @SKU = Lookup('Campanas_Config_DE', @ColumnaSKU, 'Campaign_ID', @CampID) " +
-                " IF NOT Empty(@SKU) THEN " +
-                "    SET @Filas = LookupRows('Master_Products_DE', 'SKU', @SKU) " +
-                "    IF RowCount(@Filas) > 0 THEN " +
-                "        SET @Fila = Row(@Filas, 1) " +
-                "        SET @Nombre = Field(@Fila, 'NOMBRE') " +
-                "        SET @Precio = Field(@Fila, 'PRECIO_MESON') " +
-                "        SET @Marca = Field(@Fila, 'MARCA') " +
-                "        SET @PrecioFinal = FormatCurrency(@Precio, 'es-CL') " +
-                "        SET @Imagen = Concat('" + imgPre + "', @SKU, '" + imgSuf + "') " +
-                "    ENDIF " +
-                " ENDIF " +
-                "]%%";
-
-            // Ruta simple para evitar el error de resolución de Salesforce
-            var render = "%%[ IF NOT Empty(@SKU) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Identificador SKU:</label>
+            <input type="text" id="sku_input" placeholder="WUXACC0002" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
             
-            sdk.setContent(logic + render);
-            sdk.setAsset({
-                "name": "BPP_Selector",
-                "metaData": { "thumbnail": { "url": "https://image.cl-implementos.cl/lib/fe2b11737164057a7d1676/m/1/a72fde74-d3e3-4dac-b9c2-72e747947e81.jpg" } }
-            });
-        }
-        update();
-    </script>
-</body>
-</html>
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Marca (Slug):</label>
+            <input type="text" id="marca_input" placeholder="blacksmith" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Variante de Logo:</label>
+            <div style="display: flex; gap: 5px;">
+                <select name="sufijo1" id="sufijo1" style="flex: 1; padding: 8px;">
+                    <option value="-1" selected>V1</option><option value="-2">V2</option>
+                </select>
+                <select name="sufijo2" id="sufijo2" style="flex: 1; padding: 8px;">
+                    <option value="_C" selected>Color</option><option value="_B">Blanco</option><option value="_N">Negro</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="flex: 1; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Elevación Foto SKU (px):</label>
+            <input type="number" id="pop_out_offset" value="50" style="width: 100%; padding: 8px; margin-bottom: 15px;">
+
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Posición Logo (Layering):</label>
+            <select name="logo_z_index" id="logo_z_index" style="width: 100%; padding: 8px; margin-bottom: 15px;">
+                <option value="15" selected>Por ENCIMA de la foto (Z-15)</option>
+                <option value="5">Por DEBAJO de la foto (Z-5)</option>
+            </select>
+
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Tamaño Logo Marca (%):</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="range" min="10" max="40" value="22" oninput="logo_size_val.value = this.value" style="flex: 1;">
+                <input type="number" id="logo_size_val" name="logo_size_percent" value="22" style="width: 50px; text-align: center;">
+            </div>
+        </div>
+    </div>
+</div>
