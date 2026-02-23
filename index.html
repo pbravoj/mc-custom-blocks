@@ -1,49 +1,81 @@
-<div class="motor-container" style="font-family: 'Inter', sans-serif; max-width: 850px; margin: auto; padding: 20px; background: #f4f6f9; border-radius: 15px;">
+<div class="motor-container" style="font-family: 'Inter', sans-serif; max-width: 900px; margin: auto; padding: 20px; background: #f4f6f9; border-radius: 15px; border: 1px solid #ddd;">
     
-    <h2 style="text-align: center; color: #333;">Configurador Maestro BPP v3.4</h2>
-    
-    <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 10px; border: 1px solid #ddd;">
-        <label style="font-weight: bold; display: block; margin-bottom: 5px;">1. Seleccionar Template Maestro:</label>
-        <select id="template_select" name="template_select" style="width: 100%; padding: 10px; border-radius: 5px;">
-            <option value="BPP_Layout_Claro_v3.4.0" selected>BPP Layout Claro - Escala (Full Control)</option>
-            <option value="BPP_Layout_Oscuro_v3.4.0">BPP Layout Oscuro - Escala (Full Control)</option>
-        </select>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <img src="https://www.implementos.cl/assets/images/logo-implementos.svg" width="180" alt="Logo">
+        <h2 style="color: #333; margin: 0;">Configurador Maestro BPP <span style="font-size: 14px; color: #e11d48;">v3.5.0</span></h2>
     </div>
 
-    <div style="display: flex; gap: 20px;">
-        <div style="flex: 1; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
-            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Identificador SKU:</label>
-            <input type="text" id="sku_input" placeholder="WUXACC0002" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
-            
-            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Marca (Slug):</label>
-            <input type="text" id="marca_input" placeholder="blacksmith" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+    <p style="font-size: 13px; color: #666; background: #fff; padding: 10px; border-left: 4px solid #e11d48; border-radius: 4px;">
+        <strong>Explicación:</strong> Use este panel para definir la jerarquía visual del producto. El desplazamiento del logo es relativo a la base de la imagen (valores negativos suben el logo, positivos lo bajan).
+    </p>
 
-            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Variante de Logo:</label>
-            <div style="display: flex; gap: 5px;">
-                <select name="sufijo1" id="sufijo1" style="flex: 1; padding: 8px;">
-                    <option value="-1" selected>V1</option><option value="-2">V2</option>
-                </select>
-                <select name="sufijo2" id="sufijo2" style="flex: 1; padding: 8px;">
-                    <option value="_C" selected>Color</option><option value="_B">Blanco</option><option value="_N">Negro</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="flex: 1; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
-            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Elevación Foto SKU (px):</label>
-            <input type="number" id="pop_out_offset" value="50" style="width: 100%; padding: 8px; margin-bottom: 15px;">
-
-            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Posición Logo (Layering):</label>
-            <select name="logo_z_index" id="logo_z_index" style="width: 100%; padding: 8px; margin-bottom: 15px;">
-                <option value="15" selected>Por ENCIMA de la foto (Z-15)</option>
-                <option value="5">Por DEBAJO de la foto (Z-5)</option>
+    <form id="bpp-config-form">
+        <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 10px; border: 1px solid #eee;">
+            <label style="font-weight: bold; display: block; margin-bottom: 10px;">1. Seleccionar Template Maestro:</label>
+            <select name="template_select" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                <option value="BPP_Layout_Claro_v3.5.0" selected>BPP Layout Claro - Escala (Control Pixel-Perfect)</option>
+                <option value="BPP_Layout_Oscuro_v3.5.0">BPP Layout Oscuro - Escala</option>
             </select>
+        </div>
 
-            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Tamaño Logo Marca (%):</label>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="range" min="10" max="40" value="22" oninput="logo_size_val.value = this.value" style="flex: 1;">
-                <input type="number" id="logo_size_val" name="logo_size_percent" value="22" style="width: 50px; text-align: center;">
+        <div style="margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 10px; border: 1px solid #eee;">
+            <label style="font-weight: bold; display: block; margin-bottom: 10px;">2. Seleccionar Posición de SKU (Slot):</label>
+            <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+                <label><input type="radio" name="sku_slot" value="SKU1" checked> SKU 1</label>
+                <label><input type="radio" name="sku_slot" value="SKU2"> SKU 2</label>
+                <label><input type="radio" name="sku_slot" value="SKU3"> SKU 3</label>
+                <label><input type="radio" name="sku_slot" value="SKU4"> SKU 4</label>
+                <label><input type="radio" name="sku_slot" value="SKU5"> SKU 5</label>
+                <label><input type="radio" name="sku_slot" value="SKU6"> SKU 6</label>
             </div>
         </div>
-    </div>
+
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #eee;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Identificador SKU (Manual):</label>
+                <input type="text" name="sku_val" placeholder="WUXACC0002" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px;">
+                
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Variante de Foto (1-9):</label>
+                <select name="sufijo1" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+                    <option value="-1" selected>Foto 1</option>
+                    <option value="-2">Foto 2</option>
+                    <option value="-3">Foto 3</option>
+                    <option value="-4">Foto 4</option>
+                    <option value="-5">Foto 5</option>
+                    <option value="-6">Foto 6</option>
+                    <option value="-7">Foto 7</option>
+                    <option value="-8">Foto 8</option>
+                    <option value="-9">Foto 9</option>
+                </select>
+
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Tipo de Color (Logo):</label>
+                <select name="sufijo2" style="width: 100%; padding: 10px;">
+                    <option value="_C" selected>Color (Original)</option>
+                    <option value="_B">Blanco (Piel Oscura)</option>
+                    <option value="_N">Negro (Minimalista)</option>
+                </select>
+            </div>
+
+            <div style="flex: 1; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #eee;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Elevación Imagen SKU (px):</label>
+                <input type="number" name="pop_out_offset" value="50" style="width: 100%; padding: 10px; margin-bottom: 15px;">
+
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Posición Logo Vertical (px):</label>
+                <input type="number" name="logo_y_offset" value="0" style="width: 100%; padding: 10px; margin-bottom: 5px;">
+                <small style="color: #888;">(+) baja el logo | (-) sube el logo</small>
+
+                <div style="margin-top: 15px;">
+                    <label style="font-weight: bold; display: block; margin-bottom: 5px;">Z-Index (Capa):</label>
+                    <select name="logo_z_index" style="width: 100%; padding: 10px;">
+                        <option value="15">Encima de la foto</option>
+                        <option value="5">Detrás de la foto</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" style="width: 100%; margin-top: 20px; padding: 15px; background: #0055aa; color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">
+            PROCESAR TEMPLATE %%=v(@Slot)=%%
+        </button>
+    </form>
 </div>
