@@ -2,7 +2,7 @@
     
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.2</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v3.6.3</span></h3>
     </div>
 
     <form id="bpp-config-form">
@@ -30,9 +30,11 @@
                     </div>
                 </div>
             </div>
+            
             <div id="glosa_container" style="font-size: 10px; color: #666; background: #f0f7ff; padding: 8px; border-radius: 4px; border-left: 3px solid #0055aa;">
                 <strong>Paramétrica:</strong> Tomados de 'Campanas_Config_DE'.
             </div>
+
             <div id="manual_input_container" style="display:none; margin-top: 10px;">
                 <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manualmente:</label>
                 <input type="text" id="manual_sku" name="manual_sku" placeholder="EJ: WUXACC0002" style="width: 100%; padding: 8px; border: 1px solid #e11d48; border-radius: 4px; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
@@ -52,7 +54,7 @@
                 <div style="flex: 1;">
                     <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Tamaño:</label>
                     <select id="sku_img_size" name="sku_img_size" style="width: 100%; padding: 6px; font-size: 11px;" onchange="updateUI()">
-                        <option value="h/">h (PNG)</option><option value="m/">m (PNG)</option><option value="s/">s (PNG)</option>
+                        <option value="h/">h</option>
                     </select>
                 </div>
                 <div style="flex: 1;">
@@ -62,16 +64,22 @@
                     </select>
                 </div>
             </div>
-            <div style="background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666;">
-                <span style="color: #aaa;">URL SKU PREVIEW:</span><br>
+
+            <div style="background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666; margin-bottom: 10px;">
+                <span style="color: #aaa;">ENDPOINT GENERADO:</span><br>
                 <span id="preview_url_sku">https://images.implementos.cl/img/h/@SKU-1.png</span>
+            </div>
+
+            <div id="live_preview_container" style="display:none; text-align: center; background: #f0f0f0; border: 1px dashed #ccc; padding: 10px; border-radius: 4px;">
+                <label style="font-size: 9px; font-weight: bold; color: #666; display: block; margin-bottom: 5px;">LIVE PREVIEW (REAL TIME):</label>
+                <img id="live_sku_img" src="" style="max-height: 120px; width: auto; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));" onerror="this.src='https://via.placeholder.com/120x120?text=Imagen+No+Encontrada'">
             </div>
         </div>
 
         <div style="margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee;">
             <label style="font-weight: 900; display: block; margin-bottom: 10px; font-size: 12px; color: #0055aa; text-transform: uppercase;">3. Configuración Logo Marca</label>
             <div style="display: flex; gap: 15px; margin-bottom: 10px;">
-                <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Posición Vertical / Tamaño:</label>
+                <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Vertical / Tamaño:</label>
                     <div style="display: flex; gap: 5px;">
                         <input type="number" name="logo_y_offset" value="0" style="width: 40%; padding: 4px; font-size: 11px;" oninput="updateUI()">
                         <input type="range" min="10" max="45" value="22" style="width: 60%;" oninput="logo_size_val.value = this.value; updateUI()">
@@ -79,17 +87,12 @@
                 </div>
                 <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Variante / Pantone:</label>
                     <div style="display: flex; gap: 5px;">
-                        <select id="logo_v" name="sufijo1" style="flex: 1; padding: 4px; font-size: 11px;" onchange="updateUI()">
-                            <option value="-1">V1</option><option value="-2">V2</option>
-                        </select>
-                        <select id="logo_p" name="sufijo2" style="flex: 1; padding: 4px; font-size: 11px;" onchange="updateUI()">
-                            <option value="_C">Color</option><option value="_B">Blanco</option><option value="_N">Negro</option>
-                        </select>
+                        <select id="logo_v" name="sufijo1" style="flex: 1; padding: 4px; font-size: 11px;" onchange="updateUI()"><option value="-1">V1</option><option value="-2">V2</option></select>
+                        <select id="logo_p" name="sufijo2" style="flex: 1; padding: 4px; font-size: 11px;" onchange="updateUI()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
                     </div>
                 </div>
             </div>
             <div style="background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666;">
-                <span style="color: #aaa;">URL LOGO PREVIEW:</span><br>
                 <span id="preview_url_logo">https://images.implementos.cl/marcas/h/logo_@MARCA-1_C.png</span>
             </div>
         </div>
@@ -102,29 +105,44 @@
             </div>
         </div>
 
-        <button type="button" style="width: 100%; padding: 12px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;">Generar AMPScript v3.6.2</button>
+        <button type="button" style="width: 100%; padding: 12px; background: #e11d48; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;">Generar Código v3.6.3</button>
     </form>
 </div>
 
 <script>
     function updateUI() {
-        // Lógica de Glosas y Manual Input
         var type = document.getElementById('data_source_type').value;
         var glosa = document.getElementById('glosa_container');
         var manualInput = document.getElementById('manual_input_container');
-        var manualSkuVal = document.getElementById('manual_sku').value || "@SKU";
+        var livePreview = document.getElementById('live_preview_container');
+        var manualSkuVal = document.getElementById('manual_sku').value.trim() || "";
 
-        if (type === 'parametric') { glosa.innerHTML = "<strong>Paramétrica:</strong> Tomados de 'Campanas_Config_DE'."; manualInput.style.display = 'none'; manualSkuVal = "@SKU"; }
-        else if (type === 'recommended') { glosa.innerHTML = "<strong>Recomendación:</strong> SKU desde la audiencia."; manualInput.style.display = 'none'; manualSkuVal = "@SKU"; }
-        else if (type === 'manual') { glosa.innerHTML = "<strong>Manual:</strong> Definición estática del SKU."; manualInput.style.display = 'block'; }
+        // 1. Manejo de Glosas y Visibilidad
+        if (type === 'manual') {
+            glosa.innerHTML = "<strong>Manual:</strong> Se define el SKU de forma estática.";
+            manualInput.style.display = 'block';
+            livePreview.style.display = (manualSkuVal !== "") ? 'block' : 'none';
+        } else {
+            glosa.innerHTML = (type === 'parametric') ? "<strong>Paramétrica:</strong> Desde 'Campanas_Config_DE'." : "<strong>Recomendación:</strong> SKU desde la audiencia.";
+            manualInput.style.display = 'none';
+            livePreview.style.display = 'none';
+            manualSkuVal = "@SKU";
+        }
 
-        // Preview URL SKU
+        // 2. Composición de URL SKU
         var format = document.querySelector('input[name="img_format"]:checked').value;
         var size = document.getElementById('sku_img_size').value;
         var version = document.getElementById('sku_img_version').value;
-        document.getElementById('preview_url_sku').innerText = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
+        var finalSkuUrl = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
+        
+        document.getElementById('preview_url_sku').innerText = finalSkuUrl;
 
-        // Preview URL Logo
+        // 3. Update Live Image (solo si manual)
+        if (type === 'manual' && manualSkuVal !== "") {
+            document.getElementById('live_sku_img').src = finalSkuUrl;
+        }
+
+        // 4. Preview URL Logo
         var l_v = document.getElementById('logo_v').value;
         var l_p = document.getElementById('logo_p').value;
         document.getElementById('preview_url_logo').innerText = "https://images.implementos.cl/marcas/h/logo_@MARCA" + l_v + l_p + ".png";
@@ -133,14 +151,14 @@
     function updateSizes() {
         var format = document.querySelector('input[name="img_format"]:checked').value;
         var sizeSelect = document.getElementById('sku_img_size');
+        var currentVal = sizeSelect.value;
         sizeSelect.innerHTML = "";
         var options = (format === 'png') ? [['h/', 'h'], ['m/', 'm'], ['s/', 's']] : [['1000/', '1000'], ['600/', '600'], ['350/', '350']];
         options.forEach(opt => {
-            var el = document.createElement("option"); el.value = opt[0]; el.innerHTML = opt[1] + " (" + format.toUpperCase() + ")";
+            var el = document.createElement("option"); el.value = opt[0]; el.innerHTML = opt[1];
             sizeSelect.appendChild(el);
         });
     }
 
-    // Inicializar
     window.onload = function() { updateSizes(); updateUI(); };
 </script>
