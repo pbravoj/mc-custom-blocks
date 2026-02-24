@@ -2,44 +2,177 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Motor BPP v4.8.0</title>
+    <title>Motor BPP Maestro v5.0.0</title>
     <style>
-        body { font-family: sans-serif; background: #eee; padding: 20px; }
-        .box { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        .code { background: #222; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; font-size: 12px; margin-top: 20px; }
-        select, input { width: 100%; padding: 10px; margin: 10px 0; }
+        :root { --blue: #0055aa; --red: #e11d48; --bg: #f4f6f9; }
+        body { font-family: 'Inter', sans-serif; background: #e5e7eb; padding: 20px; }
+        .main-card { max-width: 700px; margin: auto; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: var(--blue); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .section { background: var(--bg); padding: 15px; border-radius: 10px; border: 1px solid #ddd; }
+        .full { grid-column: span 2; }
+        h3 { margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; color: var(--blue); letter-spacing: 1px; }
+        label { font-size: 10px; font-weight: bold; display: block; margin-bottom: 5px; }
+        select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 12px; box-sizing: border-box; }
+        .output-container { background: #1a1a1a; padding: 20px; position: relative; }
+        .output-code { color: #00ff00; font-family: 'Monaco', monospace; font-size: 11px; white-space: pre-wrap; margin: 0; }
+        .copy-btn { position: absolute; top: 15px; right: 15px; background: var(--red); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 10px; }
+        .btn-manual { background: var(--blue); color: white; border: none; padding: 10px; border-radius: 5px; margin-top: 5px; width: 100%; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .slot-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+        .slot-btn { background: white; border: 1px solid #ccc; padding: 5px; font-size: 10px; border-radius: 3px; cursor: pointer; text-align: center; }
+        .slot-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Configurador BPP v4.8.0</h2>
-        <label>Origen:</label>
-        <select id="src" onchange="gen()">
-            <option value="parametric">Paramétrico (Config_DE)</option>
-            <option value="recommended">Recomendación (Audiencia)</option>
-            <option value="manual">Manual</option>
-        </select>
-        <label>Slot:</label>
-        <select id="slt" onchange="gen()">
-            <option value="SKU_1">Slot 1 (SKU_1)</option>
-            <option value="SKU_2">Slot 2 (SKU_2)</option>
-            <option value="SKU_3">Slot 3 (SKU_3)</option>
-        </select>
-        <div id="m_box" style="display:none"><input id="msku" placeholder="SKU Manual" oninput="gen()"></div>
-        <div class="code" id="out"></div>
+
+<div class="main-card">
+    <div class="header">
+        <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="30">
+        <div style="text-align: right;"><span style="font-size: 14px; font-weight: 900;">CONFIGURADOR BPP</span><br><span style="font-size: 10px; opacity: 0.8;">Versión 5.0.0 Gold Edition</span></div>
     </div>
-    <script>
-        function gen() {
-            const src = document.getElementById('src').value;
-            const slt = document.getElementById('slt').value;
-            const msku = document.getElementById('msku').value.toUpperCase();
-            document.getElementById('m_box').style.display = (src==='manual')?'block':'none';
-            let res = `%%[ \n SET @data_source_type = "${src}" \n SET @sku_slot = "${slt}" \n`;
-            if(src==='manual') res += ` SET @manual_sku = "${msku}" \n`;
-            res += ` SET @sku_img_size = "h/" \n]%% \n%%=ContentBlockByName("BPP/BPP_Layout_Claro")=%%`;
-            document.getElementById('out').innerText = res;
-        }
-        gen();
-    </script>
+
+    <div class="content">
+        <div class="section">
+            <h3>1. Origen de Datos</h3>
+            <select id="source" onchange="update()">
+                <option value="parametric">Paramétrico (Campaña)</option>
+                <option value="recommended">Recomendado (Audiencia)</option>
+                <option value="manual">Manual (Digitado)</option>
+            </select>
+            <div id="manual_field" style="display:none; margin-top:10px;">
+                <label>SKU Manual:</label>
+                <input type="text" id="manual_sku" placeholder="WUX0001" oninput="update()">
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>2. Selección de Slot</h3>
+            <div class="slot-grid" id="slot_selector">
+                <div class="slot-btn active" onclick="setSlot('SKU_1', this)">1</div>
+                <div class="slot-btn" onclick="setSlot('SKU_2', this)">2</div>
+                <div class="slot-btn" onclick="setSlot('SKU_3', this)">3</div>
+                <div class="slot-btn" onclick="setSlot('SKU_4', this)">4</div>
+                <div class="slot-btn" onclick="setSlot('SKU_5', this)">5</div>
+                <div class="slot-btn" onclick="setSlot('SKU_6', this)">6</div>
+            </div>
+            <input type="hidden" id="selected_slot" value="SKU_1">
+        </div>
+
+        <div class="section">
+            <h3>3. Librería de Producto</h3>
+            <div style="display:flex; gap:5px;">
+                <div style="flex:1;">
+                    <label>Formato:</label>
+                    <select id="format" onchange="update()"><option value="png">PNG</option><option value="jpg">JPG</option></select>
+                </div>
+                <div style="flex:1;">
+                    <label>Versión:</label>
+                    <select id="img_v" onchange="update()">
+                        <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option>
+                    </select>
+                </div>
+            </div>
+            <label style="margin-top:10px;">Tamaño Imagen:</label>
+            <select id="img_size" onchange="update()">
+                <option value="h/">h/ (Original)</option>
+                <option value="1000/">1000/ (JPG)</option>
+                <option value="600/">600/ (JPG)</option>
+            </select>
+        </div>
+
+        <div class="section">
+            <h3>4. Configuración Marca</h3>
+            <div style="display:flex; gap:5px;">
+                <div style="flex:1;">
+                    <label>Variante:</label>
+                    <select id="logo_v" onchange="update()">
+                        <option value="-1">V1</option><option value="-2">V2</option><option value="-3">V3</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label>Pantone:</label>
+                    <select id="logo_p" onchange="update()">
+                        <option value="_C">Color</option><option value="_B">Blanco</option><option value="_N">Negro</option>
+                    </select>
+                </div>
+            </div>
+            <label style="margin-top:10px;">Tamaño Logo (px):</label>
+            <input type="number" id="logo_sz" value="65" oninput="update()">
+        </div>
+
+        <div class="section full">
+            <h3>5. Ajustes de Layout (Pop-out & Z-Index)</h3>
+            <div style="display:flex; gap:20px;">
+                <div style="flex:1;">
+                    <label>Elevación Imagen (px):</label>
+                    <input type="range" id="pop_offset" min="20" max="80" value="55" oninput="update()">
+                </div>
+                <div style="flex:1;">
+                    <label>Capa Logo (Z-Index):</label>
+                    <select id="z_index" onchange="update()">
+                        <option value="15">Encima de Imagen</option>
+                        <option value="5">Detrás de Imagen</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="output-container">
+        <button class="copy-btn" onclick="copyCode()">COPIAR CÓDIGO</button>
+        <pre class="output-code" id="final_code"></pre>
+    </div>
+</div>
+
+<script>
+    function setSlot(val, el) {
+        document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('selected_slot').value = val;
+        update();
+    }
+
+    function update() {
+        const data = {
+            src: document.getElementById('source').value,
+            slot: document.getElementById('selected_slot').value,
+            m_sku: document.getElementById('manual_sku').value.toUpperCase(),
+            fmt: document.getElementById('format').value,
+            img_v: document.getElementById('img_v').value,
+            img_sz: document.getElementById('img_size').value,
+            logo_v: document.getElementById('logo_v').value,
+            logo_p: document.getElementById('logo_p').value,
+            logo_sz: document.getElementById('logo_sz').value,
+            pop: document.getElementById('pop_offset').value,
+            z: document.getElementById('z_index').value
+        };
+
+        document.getElementById('manual_field').style.display = (data.src === 'manual') ? 'block' : 'none';
+
+        let code = `%%[ \n`;
+        code += `  SET @data_source_type = "${data.src}" \n`;
+        code += `  SET @sku_slot = "${data.slot}" \n`;
+        code += `  SET @sku_img_size = "${data.img_sz}" \n`;
+        code += `  SET @sku_img_version = "${data.img_v}" \n`;
+        code += `  SET @img_format = "${data.fmt}" \n`;
+        code += `  SET @sufijo1 = "${data.logo_v}" \n`;
+        code += `  SET @sufijo2 = "${data.logo_p}" \n`;
+        code += `  SET @logo_size_percent = "${data.logo_sz}" \n`;
+        code += `  SET @logo_z_index = ${data.z} \n`;
+        code += `  SET @pop_out_offset = ${data.pop} \n`;
+        if(data.src === 'manual') code += `  SET @manual_sku = "${data.m_sku}" \n`;
+        code += `]%% \n`;
+        code += `%%=ContentBlockByName("BPP/BPP_Layout_Claro")=%%`;
+
+        document.getElementById('final_code').innerText = code;
+    }
+
+    function copyCode() {
+        const text = document.getElementById('final_code').innerText;
+        navigator.clipboard.writeText(text).then(() => alert('¡Código copiado!'));
+    }
+
+    update();
+</script>
 </body>
 </html>
