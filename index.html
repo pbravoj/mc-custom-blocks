@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor BPP Maestro (SDK Render y Memoria Completos)</title>
+    <title>Motor BPP Maestro (SDK Render y Memoria)</title>
     <style>
         body { background-color: #e5e7eb; padding: 20px; margin: 0; font-family: 'Inter', -apple-system, sans-serif; }
         .motor-container { max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -21,6 +21,15 @@
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
         <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">SDK Sync</span></h3>
+    </div>
+
+    <div class="section-box" style="border-left: 5px solid #0055aa;">
+        <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">0. Selección de Template</label>
+        <select id="master_layout" style="width: 100%; font-size: 11px; font-weight: bold; background: #f0f7ff;">
+            <option value="BPP/BPP_Layout_Claro" selected>BPP/BPP_Layout_Claro (Oficial Azul)</option>
+            <option value="BPP/BPP_Layout_Oscuro">BPP/BPP_Layout_Oscuro (Carbono)</option>
+            <option value="BPP/BPP_Layout_Promo">BPP/BPP_Layout_Promo (Ofertas)</option>
+        </select>
     </div>
 
     <div class="section-box">
@@ -50,7 +59,7 @@
         <div id="manual_input_container" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
             <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manual:</label>
             <div style="display: flex; gap: 5px;">
-                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; font-weight: bold; text-transform: uppercase; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase(); updateUI();">
+                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
                 <button type="button" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: bold;">VER IMAGEN</button>
             </div>
         </div>
@@ -73,9 +82,7 @@
             </div>
             <div style="flex: 1;">
                 <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Tamaño:</label>
-                <select id="sku_img_size" style="width: 100%; font-size: 11px;" onchange="updateUI()">
-                    <option value="h/">h</option>
-                </select>
+                <select id="sku_img_size" style="width: 100%; font-size: 11px;" onchange="updateUI()"><option value="h/">h</option></select>
             </div>
             <div style="flex: 1;">
                 <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Versión:</label>
@@ -93,7 +100,7 @@
     <div class="section-box">
         <label style="font-weight: 900; display: block; margin-bottom: 10px; font-size: 11px; color: #0055aa; text-transform: uppercase;">3. Configuración Logo Marca</label>
         <div style="display: flex; gap: 15px;">
-            <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Tamaño del Logo (px):</label>
+            <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Tamaño Logo (px):</label>
                 <div style="display: flex; gap: 5px;">
                     <input type="range" min="30" max="90" value="65" style="width: 100%;" id="logo_size_slider" oninput="document.getElementById('logo_size').value = this.value; updateUI()">
                     <input type="number" id="logo_size" value="65" style="width: 50px; font-size: 10px;" oninput="document.getElementById('logo_size_slider').value = this.value; updateUI()">
@@ -116,8 +123,8 @@
         </div>
     </div>
 
-    <button type="button" class="btn-sync" onclick="syncWithSalesforce()">APLICAR CAMBIOS (RENDERIZAR EN SALESFORCE)</button>
-    <div id="status_msg" style="text-align: center; font-size: 10px; color: green; margin-top: 5px; font-weight: bold; display: none;">¡Datos Guardados! Renderizando en el lienzo...</div>
+    <button type="button" class="btn-sync" onclick="syncWithSalesforce()">SINCRONIZAR Y RENDERIZAR EN SALESFORCE</button>
+    <div id="status_msg" style="text-align: center; font-size: 10px; color: green; margin-top: 5px; font-weight: bold; display: none;">¡Configuración Guardada! Dibujando en lienzo...</div>
 </div>
 
 <script>
@@ -168,9 +175,10 @@
         img.onerror = function() { status.innerText = "Error: Imagen no encontrada."; img.style.display = "none"; };
     }
 
-    /* * GUARDADO Y RENDERIZADO SDK */
+    /* * LA MAGIA: GUARDA Y RENDERIZA */
     function syncWithSalesforce() {
         var data = {
+            master_layout: document.getElementById('master_layout').value,
             data_source_type: document.getElementById('data_source_type').value,
             sku_slot: document.querySelector('input[name="sku_slot"]:checked').value,
             manual_sku: document.getElementById('manual_sku').value.toUpperCase().trim(),
@@ -184,10 +192,7 @@
             logo_z_index: document.getElementById('logo_z_index').value
         };
 
-        // PASO 1: Guardar la memoria en Salesforce
         sdk.setData(data, function() {
-            
-            // PASO 2: Inyectar AMPScript y llamar al Template
             var code = "%%[\n";
             code += " SET @data_source_type = '" + data.data_source_type + "'\n";
             code += " SET @sku_slot = '" + data.sku_slot + "'\n";
@@ -201,7 +206,7 @@
             code += " SET @pop_out_offset = '" + data.pop_out_offset + "'\n";
             code += " SET @logo_z_index = '" + data.logo_z_index + "'\n";
             code += "]%%\n";
-            code += "%%=ContentBlockByName('BPP/BPP_Layout_Claro')=%%";
+            code += "%%=ContentBlockByName('" + data.master_layout + "')=%%";
 
             sdk.setContent(code, function() {
                 var msg = document.getElementById('status_msg');
@@ -211,11 +216,12 @@
         });
     }
 
-    /* * LECTURA DE MEMORIA Y RESTAURACIÓN DE INTERFAZ */
+    /* * HIDRATACIÓN DE MEMORIA AL ABRIR */
     window.onload = function() { 
         updateSizes();
         sdk.getData(function (data) {
             if (data && Object.keys(data).length > 0) {
+                if(data.master_layout) document.getElementById('master_layout').value = data.master_layout; 
                 if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
                 if(data.sku_slot) {
                     var slotRadio = document.querySelector('input[name="sku_slot"][value="' + data.sku_slot + '"]');
