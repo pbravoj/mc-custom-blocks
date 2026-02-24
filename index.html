@@ -1,332 +1,131 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor BPP Maestro (Instant Drop Fix)</title>
-    <style>
-        body { background-color: #e5e7eb; padding: 20px; margin: 0; font-family: 'Inter', -apple-system, sans-serif; }
-        .motor-container { max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .section-box { margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee; }
-        .preview-box { background: #333; color: #00ff00; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 9px; word-break: break-all; border-left: 4px solid #666; margin-top: 5px; }
-        select, input { border: 1px solid #ccc; border-radius: 4px; padding: 6px; }
-        .debug-console { margin-top: 15px; padding: 10px; background: #111; color: #0f0; font-size: 10px; border-radius: 6px; font-family: monospace; border: 1px solid #444; }
-    </style>
-    <script src="https://developer.salesforce.com/docs/marketing/marketing-cloud/guide/assets/blocksdk.js"></script>
-</head>
-<body>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+  
+  .bpp-frame {
+    width: 340px; padding: 50px 10px 5px 10px; background-color: #F4F6F9; 
+    display: inline-block; text-align: center; overflow: visible !important;
+  }
 
-<div class="motor-container">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-        <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v7.6 Instant Drop</span></h3>
+  .bpp-tarjeta { 
+    width: 320px; font-family: 'Inter', Arial, sans-serif; border-radius: 30px; 
+    background-color: #8EA3B4; 
+    background-image: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%);
+    text-align: left; position: relative; z-index: 1; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: block; margin: 0 auto;
+    overflow: visible;
+  }
+  
+  .bpp-img-container { position: relative; width: 100%; height: 160px; z-index: 5; }
+  
+  .bpp-prod-img { 
+    width: 260px; height: auto; max-height: 200px; object-fit: contain; 
+    display: block; margin: 0 auto; position: absolute; top: -50px; left: 30px;
+    z-index: 10; filter: drop-shadow(0 15px 20px rgba(0,0,0,0.25)); 
+  }
+  
+  .bpp-brand-logo { position: absolute; bottom: 0px; right: 25px; width: 75px; z-index: 15; }
+  
+  .bpp-info { padding: 10px 25px 5px 25px; color: #ffffff; position: relative; z-index: 20; background: transparent; }
+  .bpp-sku { font-size: 11px; font-weight: 700; color: #f3f4f6; margin-bottom: 3px; }
+  .bpp-name { font-size: 14px; font-weight: 700; line-height: 1.2; margin: 0 0 20px 0; height: 34px; overflow: hidden; }
+
+  /* CONTENEDOR DE PRECIO */
+  .bpp-price-container { position: relative; width: 100%; margin-bottom: 5px; background: transparent; }
+
+  .bpp-escala-top { 
+    position: absolute; top: -18px; left: 5px; width: 100%;
+    font-size: 13px; font-weight: 700; color: #ffffff; z-index: 30;
+  }
+
+  .bpp-price-row { 
+    background-color: #0055aa; color: #ffffff; padding: 0 15px; border-radius: 15px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 50px; position: relative; z-index: 25;
+  }
+
+  .bpp-price-main { display: flex; align-items: baseline; }
+  .bpp-currency { font-size: 22px; font-weight: 700; margin-right: 2px; }
+  .bpp-price { font-size: 42px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+
+  .bpp-escala-bottom { 
+    position: absolute; bottom: -18px; left: 5px; width: 100%;
+    font-size: 12px; font-weight: 400; font-style: italic; color: #ffffff; z-index: 30;
+  }
+
+  .bpp-price-side { display: flex; align-items: center; gap: 5px; }
+  .bpp-iva { font-size: 13px; font-weight: 400; line-height: 1; }
+  .bpp-img-escala { width: 42px; height: 42px; object-fit: contain; }
+
+  /* BOTÓN: Distancia reducida a 5px */
+  .bpp-btn { 
+    display: block; float: right; 
+    margin-top: 5px; 
+    background-color: #e11d48; color: #ffffff !important; 
+    text-decoration: none; padding: 10px 22px; border-radius: 10px; 
+    font-size: 16px; font-weight: 900; text-transform: uppercase;
+    position: relative; z-index: 40;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .bpp-v { font-size: 7px; color: rgba(255,255,255,0.3); clear: both; padding-top: 8px; text-align: right; }
+</style>
+
+%%[
+  SET @CON_ESCALA = Field(@Fila, "CON_PRECIO_ESCALA")
+  SET @ESCALA_PRECIO_1 = Field(@Fila, "ESCALA_PRECIO_1")
+  SET @DESDE_ESCALA1 = Field(@Fila, "ESCALA_DESDE_1")
+  SET @HASTA_ESCALA1 = Field(@Fila, "ESCALA_HASTA_1")
+
+  IF @CON_ESCALA == "true" OR @CON_ESCALA == 1 THEN
+      SET @PrecioFinalVar = FormatCurrency(@ESCALA_PRECIO_1, "es-CL")
+  ELSE
+      SET @PrecioFinalVar = FormatCurrency(@Precio, "es-CL")
+  ENDIF
+
+  SET @PrecioLimpio = Replace(@PrecioFinalVar, "$", "")
+  SET @PrecioMesonFormateado = FormatCurrency(@Precio, "es-CL")
+  SET @UrlMarcaFinal = Concat("https://images.implementos.cl/marcas/h/logo_", @Marca, "-1_C.png")
+]%%
+
+<div class="bpp-frame">
+  <div class="bpp-tarjeta">
+    <div class="bpp-img-container">
+      <a href="https://www.implementos.cl/producto/%%=v(@SKU)=%%" target="_blank">
+        <img src="%%=v(@Imagen)=%%" class="bpp-prod-img" alt="Producto">
+      </a>
+      <img src="%%=v(@UrlMarcaFinal)=%%" class="bpp-brand-logo" alt="Marca">
     </div>
 
-    <div class="section-box" style="border-left: 5px solid #0055aa;">
-        <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">0. Selección de Template</label>
-        <select id="master_layout" style="width: 100%; padding: 8px; font-size: 11px; font-weight: bold; background: #f0f7ff;" onchange="onInputChange()">
-            <option value="BPP/BPP_Layout_Claro" selected>BPP/BPP_Layout_Claro (Oficial Azul)</option>
-            <option value="BPP/BPP_Layout_Oscuro">BPP/BPP_Layout_Oscuro (Carbono)</option>
-            <option value="BPP/BPP_Layout_Promo">BPP/BPP_Layout_Promo (Ofertas)</option>
-        </select>
+    <div class="bpp-info">
+      <div class="bpp-sku">SKU: %%=v(@SKU)=%%</div>
+      <h3 class="bpp-name">%%=v(@Nombre)=%%</h3>
+
+      <div class="bpp-price-container">
+        %%[ IF @CON_ESCALA == "true" OR @CON_ESCALA == 1 THEN ]%%
+          <div class="bpp-escala-top">Desde %%=v(@DESDE_ESCALA1)=%% %%[ IF @HASTA_ESCALA1 != 9999 THEN ]%% a %%=v(@HASTA_ESCALA1)=%% %%[ ENDIF ]%% Unid.</div>
+        %%[ ENDIF ]%%
+
+        <div class="bpp-price-row">
+          <div class="bpp-price-main">
+            <span class="bpp-currency">$</span>
+            <span class="bpp-price">%%=v(@PrecioLimpio)=%%</span>
+          </div>
+          <div class="bpp-price-side">
+            <div class="bpp-iva">IVA<br>INC</div>
+            %%[ IF @CON_ESCALA == "true" OR @CON_ESCALA == 1 THEN ]%%
+              <img src="https://www.implementos.cl/assets/images/llevaMasPagaMenos/50x50_cuadrado.webp" class="bpp-img-escala">
+            %%[ ENDIF ]%%
+          </div>
+        </div>
+
+        %%[ IF @CON_ESCALA == "true" OR @CON_ESCALA == 1 THEN ]%%
+          <div class="bpp-escala-bottom">Unid. %%=v(@PrecioMesonFormateado)=%%</div>
+        %%[ ENDIF ]%%
+      </div>
+
+      <a href="https://www.implementos.cl/producto/%%=v(@SKU)=%%" class="bpp-btn">COMPRAR</a>
+      
+      <div class="bpp-v">L: v3.0.8 | M: %%=v(@VersionMotor)=%%</div>
     </div>
-
-    <div class="section-box">
-        <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">1. Origen de Datos y Selección SKU</label>
-        <div style="display: flex; gap: 15px; margin-bottom: 10px;">
-            <div style="flex: 1;">
-                <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Tipo de Origen:</label>
-                <select id="data_source_type" style="width: 100%; font-size: 11px;" onchange="onInputChange()">
-                    <option value="parametric" selected>1. Paramétrico</option>
-                    <option value="recommended">2. Recomendado</option>
-                    <option value="manual">3. Manual</option>
-                </select>
-            </div>
-            <div style="flex: 1.5;">
-                <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Slot Destino:</label>
-                <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 6px 8px; border-radius: 4px; font-size: 10px; border: 1px solid #ddd;">
-                    <label><input type="radio" name="sku_slot" value="SKU_1" checked onchange="onInputChange()"> 1</label>
-                    <label><input type="radio" name="sku_slot" value="SKU_2" onchange="onInputChange()"> 2</label>
-                    <label><input type="radio" name="sku_slot" value="SKU_3" onchange="onInputChange()"> 3</label>
-                    <label><input type="radio" name="sku_slot" value="SKU_4" onchange="onInputChange()"> 4</label>
-                    <label><input type="radio" name="sku_slot" value="SKU_5" onchange="onInputChange()"> 5</label>
-                    <label><input type="radio" name="sku_slot" value="SKU_6" onchange="onInputChange()"> 6</label>
-                </div>
-            </div>
-        </div>
-
-        <div id="glosa_container" style="font-size: 10px; color: #666; background: #f0f7ff; padding: 8px; border-radius: 4px; border-left: 3px solid #0055aa; margin-bottom: 10px;">
-            <strong>Paramétrica:</strong> Tomados de 'Campanas_Config_DE'.
-        </div>
-
-        <div id="manual_input_container" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
-            <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manual:</label>
-            <div style="display: flex; gap: 5px;">
-                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; font-weight: bold; text-transform: uppercase; box-sizing: border-box;" onkeyup="onInputChange()">
-                <button type="button" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer;">VER IMAGEN</button>
-            </div>
-        </div>
-
-        <div id="live_preview_container" style="display:none; text-align: center; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 4px; margin-top: 10px;">
-            <img id="live_sku_img" src="" style="max-height: 120px; width: auto; display: none;">
-            <div id="img_status" style="font-size: 10px; color: #888;">Haga clic en 'Ver Imagen' para previsualizar.</div>
-        </div>
-    </div>
-
-    <div class="section-box">
-        <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">2. Juego de Librerías (URL Foto SKU)</label>
-        <div style="display: flex; gap: 15px; margin-bottom: 10px;">
-            <div style="flex: 1;">
-                <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Formato:</label>
-                <div style="display: flex; gap: 10px;">
-                    <label style="font-size: 11px;"><input type="radio" name="img_format" value="png" checked onchange="handleFormatChange()"> PNG</label>
-                    <label style="font-size: 11px;"><input type="radio" name="img_format" value="jpg" onchange="handleFormatChange()"> JPG</label>
-                </div>
-            </div>
-            <div style="flex: 1;">
-                <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Tamaño:</label>
-                <select id="sku_img_size" style="width: 100%; font-size: 11px;" onchange="onInputChange()">
-                    <option value="h/">h</option>
-                </select>
-            </div>
-            <div style="flex: 1;">
-                <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px;">Versión:</label>
-                <select id="sku_img_version" style="width: 100%; font-size: 11px;" onchange="onInputChange()">
-                    <option value="-1" selected>v-1</option><option value="-2">v-2</option><option value="-3">v-3</option>
-                </select>
-            </div>
-        </div>
-        <div class="preview-box">
-            <span style="color: #aaa;">ENDPOINT GENERADO:</span><br>
-            <span id="preview_url_sku">https://images.implementos.cl/img/...</span>
-        </div>
-    </div>
-
-    <div class="section-box">
-        <label style="font-weight: 900; display: block; margin-bottom: 10px; font-size: 11px; color: #0055aa; text-transform: uppercase;">3. Configuración Logo Marca</label>
-        <div style="display: flex; gap: 15px;">
-            <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Tamaño Logo (px):</label>
-                <div style="display: flex; gap: 5px;">
-                    <input type="range" min="30" max="90" value="65" style="width: 100%;" id="logo_size_slider" oninput="document.getElementById('logo_size').value = this.value; onInputChange();">
-                    <input type="number" id="logo_size" value="65" style="width: 50px; font-size: 10px;" oninput="document.getElementById('logo_size_slider').value = this.value; onInputChange();">
-                </div>
-            </div>
-            <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Variante / Pantone:</label>
-                <div style="display: flex; gap: 5px;">
-                    <select id="logo_v" style="flex: 1; font-size: 11px;" onchange="onInputChange()"><option value="-1">V1</option><option value="-2">V2</option></select>
-                    <select id="logo_p" style="flex: 1; font-size: 11px;" onchange="onInputChange()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="section-box">
-        <label style="font-weight: 900; display: block; margin-bottom: 8px; font-size: 11px; color: #0055aa; text-transform: uppercase;">4. SKU Imagen</label>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Elevación SKU (px):</label><input type="number" id="pop_out_offset" value="55" style="width: 100%; font-size: 11px; border: 1px solid #0055aa; font-weight: bold; color: #0055aa;" oninput="onInputChange()"></div>
-            <div style="flex: 1;"><label style="font-size: 10px; font-weight: bold; display: block;">Z-Index (Capa Logo):</label> <select id="logo_z_index" style="width: 100%; padding: 6px; font-size: 10px;" onchange="onInputChange()"><option value="15">Encima</option><option value="5">Detrás</option></select></div>
-        </div>
-    </div>
-
-    <div class="debug-console" id="debug_console">
-        ESTADO: Cargando componente...
-    </div>
-
+  </div>
 </div>
-
-<script>
-    var sdk = new window.sfdc.BlockSDK();
-    
-    // Objeto centralizado con los valores iniciales (Default State)
-    var blockData = {
-        master_layout: 'BPP/BPP_Layout_Claro',
-        data_source_type: 'parametric',
-        sku_slot: 'SKU_1',
-        manual_sku: '',
-        img_format: 'png',
-        sku_img_size: 'h/',
-        sku_img_version: '-1',
-        logo_size: '65',
-        sufijo1: '-1',
-        sufijo2: '_C',
-        pop_out_offset: '55',
-        logo_z_index: '15'
-    };
-
-    // 1. INICIALIZACIÓN: LO QUE OCURRE AL ARRASTRAR O ABRIR EL BLOQUE
-    window.onload = function() {
-        sdk.getData(function(data) {
-            if (data && Object.keys(data).length > 0) {
-                // Es un bloque viejo, recuperamos su memoria
-                blockData = Object.assign({}, blockData, data);
-                document.getElementById('debug_console').innerHTML = "ESTADO: Memoria recuperada.";
-            } else {
-                // ES UN BLOQUE NUEVO (Arrastrado recién)
-                document.getElementById('debug_console').innerHTML = "ESTADO: Bloque nuevo arrastrado. Generando visual inicial...";
-            }
-            
-            // Llenamos la interfaz gráfica
-            populateUI(); 
-            
-            // ¡EL ARREGLO ESTÁ AQUÍ! Forzamos un renderizado INSTANTÁNEO en el lienzo, sin retrasos
-            forceInstantRender(); 
-        });
-    };
-
-    // 2. CONSTRUYE EL CÓDIGO Y LO INYECTA INMEDIATAMENTE
-    function forceInstantRender() {
-        var code = generateAMPScriptCode();
-        sdk.setContent(code, function() {
-            // El lienzo ahora mostrará el cuadro o la tarjeta de inmediato
-        });
-        // Se guarda en Salesforce
-        sdk.setData(blockData);
-    }
-
-    // 3. GENERADOR DE AMPSCRIPT (Reutilizable para no duplicar código)
-    function generateAMPScriptCode() {
-        var code = "%%[\n";
-        code += " SET @data_source_type = '" + blockData.data_source_type + "'\n";
-        code += " SET @sku_slot = '" + blockData.sku_slot + "'\n";
-        code += " SET @manual_sku = '" + blockData.manual_sku + "'\n";
-        code += " SET @img_format = '" + blockData.img_format + "'\n";
-        code += " SET @sku_img_size = '" + blockData.sku_img_size + "'\n";
-        code += " SET @sku_img_version = '" + blockData.sku_img_version + "'\n";
-        code += " SET @logo_size = '" + blockData.logo_size + "'\n";
-        code += " SET @sufijo1 = '" + blockData.sufijo1 + "'\n";
-        code += " SET @sufijo2 = '" + blockData.sufijo2 + "'\n";
-        code += " SET @pop_out_offset = '" + blockData.pop_out_offset + "'\n";
-        code += " SET @logo_z_index = '" + blockData.logo_z_index + "'\n";
-        code += "]%%\n";
-
-        // Cuadro de diagnóstico visual
-        code += "<div style='background: #111; color: #0f0; border: 2px solid #0055aa; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-family: monospace; font-size: 11px;'>";
-        code += "<strong>⚙️ MOTOR BPP: CONEXIÓN EXITOSA</strong><br>";
-        code += "Origen: %%=v(@data_source_type)=%% | Slot: %%=v(@sku_slot)=%%<br>";
-        code += "Manual: %%=v(@manual_sku)=%% | Layout: " + blockData.master_layout;
-        code += "</div>\n";
-
-        code += "%%=ContentBlockByName('" + blockData.master_layout + "')=%%";
-        return code;
-    }
-
-    // 4. ACTUALIZA LA INTERFAZ CON LOS DATOS DE MEMORIA
-    function populateUI() {
-        document.getElementById('master_layout').value = blockData.master_layout;
-        document.getElementById('data_source_type').value = blockData.data_source_type;
-        
-        var slotR = document.querySelector('input[name="sku_slot"][value="' + blockData.sku_slot + '"]');
-        if(slotR) slotR.checked = true;
-
-        document.getElementById('manual_sku').value = blockData.manual_sku;
-
-        var fmtR = document.querySelector('input[name="img_format"][value="' + blockData.img_format + '"]');
-        if(fmtR) fmtR.checked = true;
-
-        updateSizesDropdown(blockData.img_format);
-        document.getElementById('sku_img_size').value = blockData.sku_img_size;
-        document.getElementById('sku_img_version').value = blockData.sku_img_version;
-        
-        document.getElementById('logo_size').value = blockData.logo_size;
-        document.getElementById('logo_size_slider').value = blockData.logo_size;
-        document.getElementById('logo_v').value = blockData.sufijo1;
-        document.getElementById('logo_p').value = blockData.sufijo2;
-        document.getElementById('pop_out_offset').value = blockData.pop_out_offset;
-        document.getElementById('logo_z_index').value = blockData.logo_z_index;
-
-        updateVisuals();
-    }
-
-    // 5. SE EJECUTA CUANDO EL USUARIO HACE UN CLIC O ESCRIBE
-    function onInputChange() {
-        // Recogemos la data del formulario
-        blockData.master_layout = document.getElementById('master_layout').value;
-        blockData.data_source_type = document.getElementById('data_source_type').value;
-        
-        var slotRadio = document.querySelector('input[name="sku_slot"]:checked');
-        if(slotRadio) blockData.sku_slot = slotRadio.value;
-
-        blockData.manual_sku = document.getElementById('manual_sku').value.toUpperCase().trim();
-        
-        var formatRadio = document.querySelector('input[name="img_format"]:checked');
-        if(formatRadio) blockData.img_format = formatRadio.value;
-
-        blockData.sku_img_size = document.getElementById('sku_img_size').value;
-        blockData.sku_img_version = document.getElementById('sku_img_version').value;
-        blockData.logo_size = document.getElementById('logo_size').value;
-        blockData.sufijo1 = document.getElementById('logo_v').value;
-        blockData.sufijo2 = document.getElementById('logo_p').value;
-        blockData.pop_out_offset = document.getElementById('pop_out_offset').value;
-        blockData.logo_z_index = document.getElementById('logo_z_index').value;
-
-        updateVisuals();
-        debouncedSave(); // Guardado con protección anti-colapso
-    }
-
-    // 6. FUNCIONES VISUALES (Textos, Ocultar/Mostrar cajas)
-    function handleFormatChange() {
-        var fmt = document.querySelector('input[name="img_format"]:checked').value;
-        updateSizesDropdown(fmt);
-        onInputChange();
-    }
-
-    function updateSizesDropdown(format) {
-        var sizeSelect = document.getElementById('sku_img_size');
-        var currVal = sizeSelect.value || 'h/';
-        sizeSelect.innerHTML = "";
-        var options = (format === 'png') ? [['h/', 'h/'], ['m/', 'm/']] : [['1000/', '1000/'], ['600/', '600/']];
-        options.forEach(function(opt) {
-            var el = document.createElement("option"); el.value = opt[0]; el.innerHTML = opt[1];
-            sizeSelect.appendChild(el);
-        });
-        var exists = Array.from(sizeSelect.options).some(function(o) { return o.value === currVal; });
-        if(exists) { sizeSelect.value = currVal; } else { sizeSelect.selectedIndex = 0; }
-    }
-
-    function updateVisuals() {
-        var isManual = (blockData.data_source_type === 'manual');
-        var isRecom = (blockData.data_source_type === 'recommended');
-        var glosa = document.getElementById('glosa_container');
-        
-        if (isManual) glosa.innerHTML = "<strong>Manual:</strong> Se define el SKU de forma estática.";
-        else if (isRecom) glosa.innerHTML = "<strong>Recomendación:</strong> SKU desde la audiencia Einstein.";
-        else glosa.innerHTML = "<strong>Paramétrica:</strong> Tomados de 'Campanas_Config_DE'.";
-
-        document.getElementById('manual_input_container').style.display = isManual ? 'block' : 'none';
-        document.getElementById('live_preview_container').style.display = isManual ? 'block' : 'none';
-
-        var skuLabel = isManual ? (blockData.manual_sku || "@SKU") : "@SKU";
-        var finalUrl = "https://images.implementos.cl/img/" + blockData.sku_img_size + skuLabel + blockData.sku_img_version + "." + blockData.img_format;
-        document.getElementById('preview_url_sku').innerText = finalUrl;
-    }
-
-    function loadLiveImage() {
-        var url = document.getElementById('preview_url_sku').innerText;
-        var img = document.getElementById('live_sku_img');
-        var status = document.getElementById('img_status');
-        if (url.includes("@SKU")) { alert("Ingrese un SKU real en modo Manual."); return; }
-        status.innerText = "Cargando..."; img.style.display = "none"; img.src = url;
-        img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
-        img.onerror = function() { status.innerText = "Error: Imagen no encontrada."; img.style.display = "none"; };
-    }
-
-    // 7. EL GUARDADO PROTEGIDO (Sólo para edición, no para el drop inicial)
-    var timeoutId;
-    function debouncedSave() {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(function() {
-            var code = generateAMPScriptCode();
-            
-            sdk.setData(blockData, function() {
-                sdk.setContent(code, function() {
-                    var d = new Date();
-                    document.getElementById('debug_console').innerHTML = "ESTADO: Editado y Actualizado (" + d.toLocaleTimeString() + ")";
-                });
-                sdk.setSuperContent(code);
-            });
-        }, 400); // 400ms de retraso al tipear/clicar
-    }
-</script>
-
-</body>
-</html>
