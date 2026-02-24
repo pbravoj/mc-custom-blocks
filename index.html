@@ -2,78 +2,87 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Motor BPP v5.2.0 - SDK Ready</title>
+    <title>Motor BPP v5.2.0 - SDK Final</title>
     <style>
         body { font-family: 'Inter', sans-serif; background: #f4f6f9; padding: 15px; font-size: 11px; }
         .section { background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; }
-        h3 { margin: 0 0 10px 0; font-size: 10px; color: #0055aa; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .readonly-monitor { background: #eef2f7; border: 1px dashed #0055aa; padding: 10px; border-radius: 6px; margin-top: 15px; }
-        .readonly-monitor table { width: 100%; font-size: 9px; }
-        .readonly-monitor td { padding: 2px 0; }
-        .status-tag { color: #0055aa; font-weight: bold; }
+        h3 { margin: 0 0 10px 0; font-size: 10px; color: #0055aa; text-transform: uppercase; border-bottom: 1px solid #eee; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        label { font-weight: bold; font-size: 9px; }
+        select, input { width: 100%; padding: 4px; border-radius: 4px; border: 1px solid #ccc; }
+        .monitor-box { background: #333; color: #0f0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 9px; margin-top: 10px; }
     </style>
     <script src="https://developer.salesforce.com/docs/marketing/marketing-cloud/guide/assets/blocksdk.js"></script>
 </head>
 <body>
 
     <div class="section">
-        <h3>Configuración de Origen</h3>
+        <h3>1. Origen y Slot (1-6)</h3>
         <select id="data_source_type" onchange="saveData()">
-            <option value="parametric">Paramétrico (Config_DE)</option>
-            <option value="recommended">Recomendado (Audiencia)</option>
+            <option value="parametric">Paramétrico</option>
+            <option value="recommended">Recomendado</option>
             <option value="manual">Manual</option>
         </select>
-    </div>
-
-    <div class="section">
-        <h3>Selección de Slot (SKU_X)</h3>
-        <div style="display:flex; justify-content:space-between;">
+        <div style="display:flex; justify-content:space-between; margin-top:8px;">
             <label><input type="radio" name="sku_slot" value="SKU_1" checked onclick="saveData()"> 1</label>
             <label><input type="radio" name="sku_slot" value="SKU_2" onclick="saveData()"> 2</label>
             <label><input type="radio" name="sku_slot" value="SKU_3" onclick="saveData()"> 3</label>
             <label><input type="radio" name="sku_slot" value="SKU_4" onclick="saveData()"> 4</label>
+            <label><input type="radio" name="sku_slot" value="SKU_5" onclick="saveData()"> 5</label>
+            <label><input type="radio" name="sku_slot" value="SKU_6" onclick="saveData()"> 6</label>
         </div>
     </div>
 
-    <div class="readonly-monitor">
-        <h3 style="color:#444; border-bottom:1px solid #ccc;">🔍 Monitor de Mapeo (Read-Only)</h3>
-        <table>
-            <tr><td width="50%">Variable SDK:</td><td class="status-tag" id="mon_source">-</td></tr>
-            <tr><td>Slot Seleccionado:</td><td class="status-tag" id="mon_slot">-</td></tr>
-            <tr><td>Librería Tamaño:</td><td class="status-tag" id="mon_size">-</td></tr>
-            <tr><td>Versión Imagen:</td><td class="status-tag" id="mon_ver">-</td></tr>
-            <tr><td>Estado Puente SDK:</td><td style="color:green; font-weight:bold;">CONECTADO</td></tr>
-        </table>
+    <div class="section">
+        <h3>2. Librerías y Formatos</h3>
+        <div class="grid">
+            <div>
+                <label>Tamaño:</label>
+                <select id="sku_img_size" onchange="saveData()">
+                    <option value="h/">h/</option><option value="m/">m/</option><option value="1000/">1000/</option>
+                </select>
+            </div>
+            <div>
+                <label>Versión:</label>
+                <select id="sku_img_version" onchange="saveData()">
+                    <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>3. Layout y Logos</h3>
+        <label>Elevación Pop-out (px):</label>
+        <input type="number" id="pop_out_offset" value="55" oninput="saveData()">
+        <div class="grid" style="margin-top:5px;">
+            <select id="sufijo1" onchange="saveData()"><option value="-1">V1</option><option value="-2">V2</option></select>
+            <select id="sufijo2" onchange="saveData()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
+        </div>
+    </div>
+
+    <div class="monitor-box">
+        <strong>[MONITOR READ-ONLY]</strong><br>
+        DATA SENT: <span id="mon_data"></span>
     </div>
 
     <script>
         var sdk = new window.sfdc.BlockSDK();
-
         function saveData() {
             var data = {
                 data_source_type: document.getElementById('data_source_type').value,
                 sku_slot: document.querySelector('input[name="sku_slot"]:checked').value,
-                sku_img_size: "h/",
-                sku_img_version: "-1",
-                img_format: "png",
-                pop_out_offset: 55,
-                sufijo1: "-1",
-                sufijo2: "_C"
+                sku_img_size: document.getElementById('sku_img_size').value,
+                sku_img_version: document.getElementById('sku_img_version').value,
+                pop_out_offset: document.getElementById('pop_out_offset').value,
+                sufijo1: document.getElementById('sufijo1').value,
+                sufijo2: document.getElementById('sufijo2').value,
+                img_format: "png"
             };
-
-            // Actualizar Monitor Visual (Read-Only)
-            document.getElementById('mon_source').innerText = data.data_source_type;
-            document.getElementById('mon_slot').innerText = data.sku_slot;
-            document.getElementById('mon_size').innerText = data.sku_img_size;
-            document.getElementById('mon_ver').innerText = data.sku_img_version;
-
-            // Enviar a Salesforce
-            sdk.setData(data, function (savedData) { console.log("Data sincronizada"); });
+            document.getElementById('mon_data').innerText = JSON.stringify(data);
+            sdk.setData(data, function (savedData) {});
         }
-
-        sdk.getData(function (data) {
-            if (Object.keys(data).length > 0) { saveData(); }
-        });
+        sdk.getData(function (data) { if (Object.keys(data).length > 0) saveData(); });
     </script>
 </body>
 </html>
