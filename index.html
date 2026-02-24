@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor BPP Maestro v6.1.0 (Fix Manual)</title>
+    <title>Motor BPP Maestro (SDK Render y Memoria Completos)</title>
     <style>
         body { background-color: #e5e7eb; padding: 20px; margin: 0; font-family: 'Inter', -apple-system, sans-serif; }
         .motor-container { max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -20,7 +20,7 @@
 <div class="motor-container">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v6.1.0</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">SDK Sync</span></h3>
     </div>
 
     <div class="section-box">
@@ -50,8 +50,8 @@
         <div id="manual_input_container" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
             <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manual:</label>
             <div style="display: flex; gap: 5px;">
-                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; font-weight: bold; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase(); updateUI();">
-                <button type="button" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold;">VER IMAGEN</button>
+                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; font-weight: bold; text-transform: uppercase; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase(); updateUI();">
+                <button type="button" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: bold;">VER IMAGEN</button>
             </div>
         </div>
 
@@ -158,7 +158,6 @@
         document.getElementById('preview_url_sku').innerText = "https://images.implementos.cl/img/" + size + (manualSkuVal || "@SKU") + version + "." + format;
     }
 
-    /* RESTAURADO: Función para ver imagen en el motor */
     function loadLiveImage() {
         var url = document.getElementById('preview_url_sku').innerText;
         var img = document.getElementById('live_sku_img');
@@ -169,6 +168,7 @@
         img.onerror = function() { status.innerText = "Error: Imagen no encontrada."; img.style.display = "none"; };
     }
 
+    /* * GUARDADO Y RENDERIZADO SDK */
     function syncWithSalesforce() {
         var data = {
             data_source_type: document.getElementById('data_source_type').value,
@@ -184,7 +184,10 @@
             logo_z_index: document.getElementById('logo_z_index').value
         };
 
+        // PASO 1: Guardar la memoria en Salesforce
         sdk.setData(data, function() {
+            
+            // PASO 2: Inyectar AMPScript y llamar al Template
             var code = "%%[\n";
             code += " SET @data_source_type = '" + data.data_source_type + "'\n";
             code += " SET @sku_slot = '" + data.sku_slot + "'\n";
@@ -208,6 +211,7 @@
         });
     }
 
+    /* * LECTURA DE MEMORIA Y RESTAURACIÓN DE INTERFAZ */
     window.onload = function() { 
         updateSizes();
         sdk.getData(function (data) {
