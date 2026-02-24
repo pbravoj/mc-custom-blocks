@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor BPP Maestro (Full UI + SDK Real-Time)</title>
+    <title>Motor BPP Maestro (SDK Real-Time + Manual Fix)</title>
     <style>
         body { background-color: #e5e7eb; padding: 20px; margin: 0; font-family: 'Inter', -apple-system, sans-serif; }
         .motor-container { max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -19,7 +19,7 @@
 <div class="motor-container">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v7.2 Full Sync</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">v7.3 Live</span></h3>
     </div>
 
     <div class="section-box" style="border-left: 5px solid #0055aa;">
@@ -62,7 +62,7 @@
         <div id="manual_input_container" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
             <label style="font-size: 10px; font-weight: bold; display: block; margin-bottom: 4px; color: #e11d48;">Ingresar SKU Manual:</label>
             <div style="display: flex; gap: 5px;">
-                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; font-weight: bold; text-transform: uppercase; box-sizing: border-box;" oninput="this.value = this.value.toUpperCase(); onUserInput();">
+                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="flex: 2; font-weight: bold; text-transform: uppercase; box-sizing: border-box;" onkeyup="onUserInput()">
                 <button type="button" onclick="loadLiveImage()" style="flex: 1; background: #0055aa; color: #fff; border: none; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer;">VER IMAGEN</button>
             </div>
         </div>
@@ -135,7 +135,7 @@
 <script>
     var sdk = new window.sfdc.BlockSDK();
     
-    // Objeto centralizado (Memoria)
+    // Objeto centralizado
     var blockData = {
         master_layout: 'BPP/BPP_Layout_Claro',
         data_source_type: 'parametric',
@@ -151,7 +151,6 @@
         logo_z_index: '15'
     };
 
-    // 1. ARRANCAMOS PIDIENDO LA MEMORIA A SALESFORCE
     window.onload = function() {
         sdk.getData(function(data) {
             if (data && Object.keys(data).length > 0) {
@@ -164,7 +163,6 @@
         });
     };
 
-    // 2. RELLENAMOS LA INTERFAZ
     function populateUI() {
         try {
             document.getElementById('master_layout').value = blockData.master_layout;
@@ -196,7 +194,6 @@
         }
     }
 
-    // 3. CAPTURAMOS CAMBIOS DEL USUARIO
     function onUserInput() {
         blockData.master_layout = document.getElementById('master_layout').value;
         blockData.data_source_type = document.getElementById('data_source_type').value;
@@ -246,12 +243,10 @@
         var isRecom = (blockData.data_source_type === 'recommended');
         var glosa = document.getElementById('glosa_container');
         
-        // Actualizamos Glosa
         if (isManual) { glosa.innerHTML = "<strong>Manual:</strong> Se define el SKU de forma estática."; }
         else if (isRecom) { glosa.innerHTML = "<strong>Recomendación:</strong> SKU desde la audiencia Einstein."; }
         else { glosa.innerHTML = "<strong>Paramétrica:</strong> Tomados de 'Campanas_Config_DE'."; }
 
-        // Actualizamos visibilidad de previsualización
         document.getElementById('manual_input_container').style.display = isManual ? 'block' : 'none';
         document.getElementById('live_preview_container').style.display = isManual ? 'block' : 'none';
 
@@ -264,22 +259,19 @@
         var url = document.getElementById('preview_url_sku').innerText;
         var img = document.getElementById('live_sku_img');
         var status = document.getElementById('img_status');
-        if (url.includes("@SKU")) { alert("Ingrese un SKU real en modo Manual."); return; }
+        if (url.includes("@SKU") || url.includes("img/h/-1.png")) { alert("Ingrese un SKU real en modo Manual."); return; }
         status.innerText = "Cargando..."; img.style.display = "none"; img.src = url;
         img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
         img.onerror = function() { status.innerText = "Error: Imagen no encontrada."; img.style.display = "none"; };
     }
 
-    // 4. EL MOTOR DE GUARDADO CON DIAGNÓSTICO EN EL LIENZO (DEBOUNCE)
     var saveTimeout;
     function saveAndRender() {
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(function() {
             
-            // A. Guardamos la memoria
             sdk.setData(blockData, function() {
                 
-                // B. Construimos AMPScript para Salesforce
                 var code = "%%[\n";
                 code += " SET @data_source_type = '" + blockData.data_source_type + "'\n";
                 code += " SET @sku_slot = '" + blockData.sku_slot + "'\n";
@@ -294,23 +286,19 @@
                 code += " SET @logo_z_index = '" + blockData.logo_z_index + "'\n";
                 code += "]%%\n";
 
-                // C. INYECCIÓN DEL RECUADRO DE DIAGNÓSTICO EN EL LIENZO
                 code += "<div style='background-color: #111; color: #0f0; border: 2px solid #0055aa; padding: 10px; margin-bottom: 15px; border-radius: 8px; font-family: monospace; font-size: 11px; text-align: left;'>";
                 code += "   <strong style='color: #fff;'>⚙️ MOTOR BPP CONECTADO AL LIENZO</strong><hr style='border-color: #333;'>";
-                code += "   <strong>Template Inyectado:</strong> " + blockData.master_layout + "<br>";
-                code += "   <strong>Origen de Datos:</strong> %%=v(@data_source_type)=%%<br>";
+                code += "   <strong>Template:</strong> " + blockData.master_layout + "<br>";
+                code += "   <strong>Origen:</strong> %%=v(@data_source_type)=%%<br>";
                 code += "   <strong>Slot Elegido:</strong> %%=v(@sku_slot)=%%<br>";
                 code += "   <strong>SKU Manual:</strong> %%=v(@manual_sku)=%%<br>";
-                code += "   <strong>PopOut Elevación:</strong> %%=v(@pop_out_offset)=%%px";
                 code += "</div>\n";
 
-                // D. Llamada al Template Real
                 code += "%%=ContentBlockByName('" + blockData.master_layout + "')=%%";
 
-                // E. Renderizamos en Salesforce
                 sdk.setContent(code, function() {
                     var now = new Date();
-                    document.getElementById('debug_console').innerHTML = "ESTADO: Datos guardados y Lienzo actualizado con éxito.<br>HORA: " + now.toLocaleTimeString();
+                    document.getElementById('debug_console').innerHTML = "ESTADO: Datos guardados y Lienzo actualizado.<br>HORA: " + now.toLocaleTimeString();
                 });
                 
                 sdk.setSuperContent(code);
