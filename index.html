@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.13.0</title>
+    <title>BPP Selector M10.14.0 - Jerarquía de Textos</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -36,7 +36,7 @@
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">Configurador BPP (M10.13.0)</h1>
+        <h1 class="header-title">Configurador BPP (M10.14.0)</h1>
     </div>
 
     <div class="container">
@@ -51,14 +51,13 @@
         <div id="tab-template" class="tab-content active">
             <label style="color: #0055aa;">Selección de Template Base</label>
             <select id="master_layout" onchange="update()">
-                <option value="BPP_Layout_Claro">BPP Layout Claro</option>
-                <option value="BPP_Layout_Oscuro">BPP Layout Oscuro</option>
+                <option value="">Cargando templates...</option>
             </select>
 
             <label style="color: #e11d48; margin-top: 15px;">Diagnóstico</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Panel Debug:</div>
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Panel Debug (Ocultar en Producción):</div>
                     <select id="show_debug" onchange="update()">
                         <option value="false" selected>Ocultar</option>
                         <option value="true">Mostrar Panel</option>
@@ -104,11 +103,10 @@
             <div class="flex-row">
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Elevación/Offset (px):</div>
-                    <input type="number" id="sku_img_offset_new" value="55" oninput="document.getElementById('pop_out_offset').value = this.value; update();">
-                    <input type="hidden" id="pop_out_offset" value="55">
+                    <input type="number" id="sku_img_offset_new" value="55" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho (%):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho de la Foto (%):</div>
                     <input type="number" id="sku_img_width" value="85" oninput="update()">
                 </div>
             </div>
@@ -121,7 +119,7 @@
                 <select id="logo_p" class="flex-col" onchange="update()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
                 <select id="logo_z_index" class="flex-col" onchange="update()"><option value="15">Encima Foto</option><option value="5">Detrás Foto</option></select>
             </div>
-            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Absoluto)</label>
+            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Absoluto en la Tarjeta)</label>
             <div class="flex-row">
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Esquina:</div>
@@ -133,11 +131,11 @@
                     </select>
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño (%):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño Logo (%):</div>
                     <input type="number" id="logo_size_percent" value="30" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Distancia (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Distancia Borde (px):</div>
                     <input type="number" id="logo_distance" value="15" oninput="update()">
                 </div>
             </div>
@@ -145,29 +143,29 @@
 
         <div id="tab-textos" class="tab-content">
             <label style="color: #0055aa;">Visibilidad de Textos</label>
-            <div class="checkbox-group"><input type="checkbox" id="show_name" checked onchange="update()"> Mostrar Nombre Producto</div>
-            <div class="checkbox-group"><input type="checkbox" id="show_desc1" checked onchange="update()"> Mostrar Descripción Línea 1</div>
-            <div class="checkbox-group"><input type="checkbox" id="show_desc2" checked onchange="update()"> Mostrar Descripción Línea 2</div>
+            <div class="checkbox-group"><input type="checkbox" id="show_name" checked onchange="update()"> Mostrar Nombre Producto (@NOMBRE)</div>
+            <div class="checkbox-group"><input type="checkbox" id="show_desc1" checked onchange="update()"> Mostrar Desc. Línea 1 (@DESCRIP_L1)</div>
+            <div class="checkbox-group"><input type="checkbox" id="show_desc2" checked onchange="update()"> Mostrar Desc. Línea 2 (@DESCRIP_L2)</div>
 
-            <label style="color: #e11d48; margin-top: 20px;">Separaciones hacia Abajo (Evitar Traslapes)</label>
+            <label style="color: #e11d48; margin-top: 20px;">Distancias (Para evitar solapamientos con la Foto)</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo Foto SKU (px):</div>
-                    <input type="number" id="space_below_sku" value="10" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Bajar Textos desde Foto:</div>
+                    <input type="number" id="space_photo_to_sku" value="15" oninput="update()" title="Aumenta esto si los textos se montan en la foto">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo Título (px):</div>
-                    <input type="number" id="space_below_name" value="5" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Bajo Texto SKU (px):</div>
+                    <input type="number" id="space_sku_to_name" value="5" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo Desc. (px):</div>
-                    <input type="number" id="space_below_desc" value="10" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Bajo Nombre (px):</div>
+                    <input type="number" id="space_name_to_desc" value="10" oninput="update()">
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            Implementos S.A. | M10.13.0
+            Implementos S.A. | M10.14.0 (Jerarquía Estricta)
         </div>
     </div>
 
@@ -181,6 +179,28 @@
             for (var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
             document.getElementById(tabId).style.display = "block";
             evt.currentTarget.classList.add("active");
+        }
+
+        async function loadTemplates() {
+            var select = document.getElementById('master_layout');
+            try {
+                var response = await fetch('templates.txt?t=' + new Date().getTime());
+                if (response.ok) {
+                    var text = await response.text();
+                    var lines = text.split('\n');
+                    select.innerHTML = ''; 
+                    lines.forEach(function(line) {
+                        if (line.trim() !== '') {
+                            var parts = line.split('|');
+                            var opt = document.createElement('option');
+                            opt.value = parts[0].trim(); opt.innerText = parts.length > 1 ? parts[1].trim() : parts[0].trim();
+                            select.appendChild(opt);
+                        }
+                    });
+                }
+            } catch (error) {
+                select.innerHTML = '<option value="BPP_Layout_Claro">BPP_Layout_Claro</option>';
+            }
         }
 
         function updateSizesDropdown() {
@@ -207,10 +227,8 @@
             var version = document.getElementById('sku_img_version').value;
             var suf1 = document.getElementById('logo_v').value;
             var suf2 = document.getElementById('logo_p').value;
-            var popOut = document.getElementById('pop_out_offset').value;
             var logoZ = document.getElementById('logo_z_index').value;
 
-            // Variables de Pestaña 3 y 4
             var skuImgOffsetNew = document.getElementById('sku_img_offset_new').value;
             var skuImgWidth = document.getElementById('sku_img_width').value;
             var logoPos = document.getElementById('logo_position').value;
@@ -218,13 +236,13 @@
             var logoDist = document.getElementById('logo_distance').value;
             var showDebug = document.getElementById('show_debug').value;
 
-            // Variables de Pestaña 5 (Textos)
             var showName = document.getElementById('show_name').checked ? "true" : "false";
             var showDesc1 = document.getElementById('show_desc1').checked ? "true" : "false";
             var showDesc2 = document.getElementById('show_desc2').checked ? "true" : "false";
-            var spaceSku = document.getElementById('space_below_sku').value;
-            var spaceName = document.getElementById('space_below_name').value;
-            var spaceDesc = document.getElementById('space_below_desc').value;
+            
+            var spacePhotoSku = document.getElementById('space_photo_to_sku').value;
+            var spaceSkuName = document.getElementById('space_sku_to_name').value;
+            var spaceNameDesc = document.getElementById('space_name_to_desc').value;
 
             document.getElementById('manual_input_container').style.display = (dsType === 'manual') ? 'block' : 'none';
 
@@ -237,7 +255,6 @@
                 " SET @sku_img_version = '" + version + "'\n" +
                 " SET @sufijo1 = '" + suf1 + "'\n" +
                 " SET @sufijo2 = '" + suf2 + "'\n" +
-                " SET @pop_out_offset = '" + popOut + "'\n" +
                 " SET @logo_z_index = '" + logoZ + "'\n" +
                 " SET @sku_img_offset_new = '" + skuImgOffsetNew + "'\n" +
                 " SET @sku_img_width = '" + skuImgWidth + "'\n" +
@@ -248,9 +265,9 @@
                 " SET @show_name = '" + showName + "'\n" +
                 " SET @show_desc1 = '" + showDesc1 + "'\n" +
                 " SET @show_desc2 = '" + showDesc2 + "'\n" +
-                " SET @space_below_sku = '" + spaceSku + "'\n" +
-                " SET @space_below_name = '" + spaceName + "'\n" +
-                " SET @space_below_desc = '" + spaceDesc + "'\n" +
+                " SET @space_photo_to_sku = '" + spacePhotoSku + "'\n" +
+                " SET @space_sku_to_name = '" + spaceSkuName + "'\n" +
+                " SET @space_name_to_desc = '" + spaceNameDesc + "'\n" +
                 "]%%\n";
 
             var render = "%%[ IF NOT Empty(@sku_slot) OR NOT Empty(@manual_sku) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
@@ -260,17 +277,17 @@
             var dataToSave = {
                 master_layout: lay, data_source_type: dsType, sku_slot: slot,
                 manual_sku: manualSku, img_format: format, sku_img_size: size,
-                sku_img_version: version, sufijo1: suf1,
-                sufijo2: suf2, pop_out_offset: popOut, logo_z_index: logoZ,
+                sku_img_version: version, sufijo1: suf1, sufijo2: suf2, logo_z_index: logoZ,
                 sku_img_offset_new: skuImgOffsetNew, sku_img_width: skuImgWidth,
                 logo_position: logoPos, logo_size_percent: logoSizePct, logo_distance: logoDist,
                 show_debug: showDebug, show_name: showName, show_desc1: showDesc1, show_desc2: showDesc2,
-                space_below_sku: spaceSku, space_below_name: spaceName, space_below_desc: spaceDesc
+                space_photo_to_sku: spacePhotoSku, space_sku_to_name: spaceSkuName, space_name_to_desc: spaceNameDesc
             };
             sdk.setData(dataToSave);
         }
 
-        window.onload = function() {
+        window.onload = async function() {
+            await loadTemplates();
             updateSizesDropdown();
             sdk.getData(function(data) {
                 if (data && Object.keys(data).length > 0) {
@@ -286,7 +303,6 @@
                     if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
                     if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
                     if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
-                    if(data.pop_out_offset) document.getElementById('pop_out_offset').value = data.pop_out_offset;
                     if(data.logo_z_index) document.getElementById('logo_z_index').value = data.logo_z_index;
                     
                     if(data.sku_img_offset_new) document.getElementById('sku_img_offset_new').value = data.sku_img_offset_new;
@@ -299,9 +315,10 @@
                     if(data.show_name) document.getElementById('show_name').checked = (data.show_name === "true");
                     if(data.show_desc1) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
                     if(data.show_desc2) document.getElementById('show_desc2').checked = (data.show_desc2 === "true");
-                    if(data.space_below_sku) document.getElementById('space_below_sku').value = data.space_below_sku;
-                    if(data.space_below_name) document.getElementById('space_below_name').value = data.space_below_name;
-                    if(data.space_below_desc) document.getElementById('space_below_desc').value = data.space_below_desc;
+                    
+                    if(data.space_photo_to_sku) document.getElementById('space_photo_to_sku').value = data.space_photo_to_sku;
+                    if(data.space_sku_to_name) document.getElementById('space_sku_to_name').value = data.space_sku_to_name;
+                    if(data.space_name_to_desc) document.getElementById('space_name_to_desc').value = data.space_name_to_desc;
                 }
                 update();
             });
