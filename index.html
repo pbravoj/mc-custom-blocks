@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.15.0 - Z-Layering & Checkboxes</title>
+    <title>BPP Selector M10.16.0 - Arquitectura Relativa</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -27,7 +27,6 @@
         .slot-grid label { font-size: 12px; margin-bottom: 0; border: none; padding: 0;}
         .ver-badge { background: #0055aa; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; }
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; padding-top: 15px; }
-        .btn-validar { background: #0055aa; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
         
         .checkbox-group { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #444; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee;}
         .checkbox-group input { width: auto; margin-right: 8px; margin-bottom: 0;}
@@ -36,7 +35,7 @@
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">Configurador BPP (M10.15.0)</h1>
+        <h1 class="header-title">Configurador BPP (M10.16.0)</h1>
     </div>
 
     <div class="container">
@@ -94,17 +93,18 @@
                 <select id="sku_img_size" class="flex-col" onchange="update()"><option value="h/">h/</option></select>
                 <select id="sku_img_version" class="flex-col" onchange="update()"><option value="-1" selected>-1</option><option value="-2">-2</option></select>
             </div>
-            <label style="color: #e11d48; margin-top: 15px;">Ubicación de Foto</label>
+            <label style="color: #e11d48; margin-top: 15px;">Ubicación de la Foto respecto a la FICHA</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Elevación/Offset (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Elevación (px):</div>
                     <input type="number" id="sku_img_offset_new" value="55" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho (%):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho Foto (%):</div>
                     <input type="number" id="sku_img_width" value="85" oninput="update()">
                 </div>
             </div>
+            <div style="font-size:10px; color:#888;">El Frame gris siempre crecerá para evitar que la foto se salga del cuadro exterior.</div>
         </div>
 
         <div id="tab-logo" class="tab-content">
@@ -112,12 +112,12 @@
             <div class="flex-row">
                 <select id="logo_v" class="flex-col" onchange="update()"><option value="-1">V1</option><option value="-2">V2</option></select>
                 <select id="logo_p" class="flex-col" onchange="update()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
-                <select id="logo_z_index" class="flex-col" onchange="update()"><option value="15">15 - Encima Foto</option><option value="5">5 - Detrás Foto</option></select>
+                <select id="logo_z_index" class="flex-col" onchange="update()"><option value="15">Encima Foto</option><option value="5">Detrás Foto</option></select>
             </div>
-            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Capa Absoluta)</label>
+            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Relativo a la FOTO del producto)</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Esquina:</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Esquina de la Foto:</div>
                     <select id="logo_position" onchange="update()">
                         <option value="SD">Sup. Derecha</option>
                         <option value="SI">Sup. Izquierda</option>
@@ -130,8 +130,8 @@
                     <input type="number" id="logo_size_percent" value="30" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Distancia Borde (px):</div>
-                    <input type="number" id="logo_distance" value="15" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Distancia (px):</div>
+                    <input type="number" id="logo_distance" value="10" oninput="update()">
                 </div>
             </div>
         </div>
@@ -142,25 +142,25 @@
             <div class="checkbox-group"><input type="checkbox" id="show_desc1" checked onchange="update()"> Mostrar Desc. Línea 1 (@DESCRIP_L1)</div>
             <div class="checkbox-group"><input type="checkbox" id="show_desc2" checked onchange="update()"> Mostrar Desc. Línea 2 (@DESCRIP_L2)</div>
 
-            <label style="color: #e11d48; margin-top: 20px;">Distancias (Para evitar solapamientos con la Foto)</label>
+            <label style="color: #e11d48; margin-top: 20px;">Deltas de Separación (Márgenes)</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Bajar Textos desde Foto:</div>
-                    <input type="number" id="space_photo_to_sku" value="15" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Delta debajo de la Foto:</div>
+                    <input type="number" id="space_photo_to_sku" value="10" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Bajo Texto SKU (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Delta debajo de SKU:</div>
                     <input type="number" id="space_sku_to_name" value="5" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Bajo Nombre (px):</div>
-                    <input type="number" id="space_name_to_desc" value="10" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Delta debajo de Nombre:</div>
+                    <input type="number" id="space_name_to_desc" value="8" oninput="update()">
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            Implementos S.A. | M10.15.0 (Z-Layer Fix)
+            Implementos S.A. | M10.16.0 (Dom Flow Architecture)
         </div>
     </div>
 
@@ -230,7 +230,6 @@
             var logoSizePct = document.getElementById('logo_size_percent').value;
             var logoDist = document.getElementById('logo_distance').value;
             
-            // Checkboxes extraídos como strings explícitos para el AMPScript
             var showDebug = document.getElementById('show_debug').checked ? "true" : "false";
             var showName = document.getElementById('show_name').checked ? "true" : "false";
             var showDesc1 = document.getElementById('show_desc1').checked ? "true" : "false";
@@ -307,7 +306,6 @@
                     if(data.logo_size_percent) document.getElementById('logo_size_percent').value = data.logo_size_percent;
                     if(data.logo_distance) document.getElementById('logo_distance').value = data.logo_distance;
                     
-                    // CORRECCIÓN LECTURA DE CHECKBOXES (Convierte string a booleano real)
                     if(data.show_debug !== undefined) document.getElementById('show_debug').checked = (data.show_debug === "true");
                     if(data.show_name !== undefined) document.getElementById('show_name').checked = (data.show_name === "true");
                     if(data.show_desc1 !== undefined) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
