@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor BPP v10.1.0 - Diagnóstico Transparente</title>
+    <title>Motor BPP v10.2.0 - Conexión SDK</title>
     <style>
         body { background-color: #e5e7eb; padding: 20px; margin: 0; font-family: 'Inter', system-ui, sans-serif; }
         .motor-container { max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -15,23 +15,24 @@
         .slot-grid { display: flex; justify-content: space-between; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
         .btn-validar { background: #0055aa; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
         .btn-validar:hover { background: #004488; }
-        .btn-main { width: 100%; padding: 15px; background: #e11d48; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px;}
-        /* NUEVO: Caja de salida de código para diagnóstico */
-        #output_code { width: 100%; height: 180px; background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; border: 1px solid #333; margin-top: 15px; display: none; box-sizing: border-box; }
+        .btn-main { width: 100%; padding: 15px; background: #e11d48; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 10px;}
+        #output_code { width: 100%; height: 130px; background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; border: 1px solid #333; margin-top: 10px; display: none; box-sizing: border-box; }
+        #status_msg { color: green; font-weight: bold; font-size: 11px; text-align: center; display: none; margin-top: 5px; }
     </style>
+    <script src="https://developer.salesforce.com/docs/marketing/marketing-cloud/guide/assets/blocksdk.js"></script>
 </head>
 <body>
 
 <div class="motor-container">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">M10.1.0</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">M10.2.0</span></h3>
     </div>
 
     <form id="bpp-config-form">
         <div class="section-box" style="border-left: 5px solid #0055aa;">
             <label style="color: #0055aa; text-transform: uppercase;">0. Selección de Template (Directorio BPP)</label>
-            <select id="master_layout">
+            <select id="master_layout" onchange="updateUI()">
                 <option value="BPP/BPP_Layout_Claro" selected>BPP/BPP_Layout_Claro (Oficial)</option>
                 <option value="BPP/BPP_Layout_Oscuro">BPP/BPP_Layout_Oscuro (Carbono)</option>
             </select>
@@ -144,20 +145,23 @@
             </div>
         </div>
 
-        <button type="button" class="btn-main" onclick="generarCodigoPrueba()">GENERAR Y VER BLOQUE AMPSCRIPT</button>
+        <button type="button" class="btn-main" onclick="syncToSalesforce()">APLICAR CAMBIOS Y VER CÓDIGO</button>
+        <div id="status_msg">✓ Lienzo actualizado en Salesforce.</div>
         
         <textarea id="output_code" readonly></textarea>
     </form>
 </div>
 
 <script>
+    // INICIALIZACIÓN DEL SDK
+    var sdk = new window.sfdc.BlockSDK();
+
     function updateUI() {
         var type = document.getElementById('data_source_type').value;
         var manualInput = document.getElementById('manual_input_container');
         var btnValidar = document.getElementById('btn_validar');
         var manualSkuVal = document.getElementById('manual_sku').value.trim();
 
-        // Mostrar controles según origen
         if (type === 'manual') {
             manualInput.style.display = 'block';
             btnValidar.style.display = 'block';
@@ -167,15 +171,12 @@
             manualSkuVal = "@SKU";
         }
 
-        // Construir URL SKU
         var format = document.getElementById('img_format').value;
         var size = document.getElementById('sku_img_size').value;
         var version = document.getElementById('sku_img_version').value;
         var skuPath = (type === 'manual' && manualSkuVal !== "") ? manualSkuVal : "@SKU";
-        var finalSkuUrl = "https://images.implementos.cl/img/" + size + skuPath + version + "." + format;
-        document.getElementById('preview_url_sku').innerText = finalSkuUrl;
+        document.getElementById('preview_url_sku').innerText = "https://images.implementos.cl/img/" + size + skuPath + version + "." + format;
 
-        // Construir URL LOGO
         var l_v = document.getElementById('logo_v').value;
         var l_p = document.getElementById('logo_p').value;
         document.getElementById('preview_url_logo').innerText = "https://images.implementos.cl/marcas/h/logo_@MARCA" + l_v + l_p + ".png";
@@ -184,12 +185,14 @@
     function updateSizes() {
         var format = document.getElementById('img_format').value;
         var sizeSelect = document.getElementById('sku_img_size');
+        var currVal = sizeSelect.value;
         sizeSelect.innerHTML = "";
         var options = (format === 'png') ? [['h/', 'h'], ['m/', 'm'], ['s/', 's']] : [['1000/', '1000'], ['600/', '600'], ['350/', '350']];
         options.forEach(opt => {
             var el = document.createElement("option"); el.value = opt[0]; el.innerText = opt[1];
             sizeSelect.appendChild(el);
         });
+        if (Array.from(sizeSelect.options).some(o => o.value === currVal)) { sizeSelect.value = currVal; }
     }
 
     function loadLiveImage() {
@@ -201,12 +204,9 @@
         img.src = url;
     }
 
-    // ==============================================================
-    // NUEVA FUNCIÓN DE DIAGNÓSTICO: CONSTRUYE EL CÓDIGO Y LO MUESTRA
-    // ==============================================================
-    function generarCodigoPrueba() {
+    // FUNCIÓN QUE CONSTRUYE, GUARDA E INYECTA
+    function syncToSalesforce() {
         var currentSlot = document.querySelector('input[name="sku_slot"]:checked');
-        
         var data = {
             master_layout: document.getElementById('master_layout').value,
             data_source_type: document.getElementById('data_source_type').value,
@@ -237,15 +237,55 @@
         code += "]%%\n";
         code += "%%=ContentBlockByName('" + data.master_layout + "')=%%";
 
-        // Muestra el código en la caja negra del fondo
+        // Muestra en caja negra
         var outBox = document.getElementById('output_code');
         outBox.value = code;
         outBox.style.display = 'block';
+
+        // ENVÍO A SALESFORCE (Memoria y Lienzo)
+        sdk.setData(data, function() {
+            sdk.setContent(code, function() {
+                var msg = document.getElementById('status_msg');
+                msg.style.display = 'block';
+                setTimeout(function(){ msg.style.display = 'none'; }, 3000);
+            });
+        });
     }
 
-    window.onload = function() { updateSizes(); updateUI(); };
+    // ARRANQUE Y RECUPERACIÓN DE MEMORIA
+    window.onload = function() {
+        updateSizes();
+        
+        sdk.getData(function(data) {
+            // Si hay memoria guardada, rellenamos
+            if (data && Object.keys(data).length > 0) {
+                if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
+                if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
+                if(data.sku_slot) {
+                    var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]');
+                    if(r) r.checked = true;
+                }
+                if(data.manual_sku) document.getElementById('manual_sku').value = data.manual_sku;
+                if(data.img_format) {
+                    document.getElementById('img_format').value = data.img_format;
+                    updateSizes(); 
+                }
+                if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
+                if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
+                if(data.logo_size) document.getElementById('logo_size').value = data.logo_size;
+                if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
+                if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
+                if(data.pop_out_offset) document.getElementById('pop_out_offset').value = data.pop_out_offset;
+                if(data.logo_z_index) document.getElementById('logo_z').value = data.logo_z_index;
+            }
+            
+            updateUI();
+            
+            // RENDEREA INMEDIATAMENTE AL ARRASTRAR O ABRIR
+            syncToSalesforce();
+        });
+    };
 </script>
 
 </body>
 </html>
-
