@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.7.0 - Implementos S.A.</title>
+    <title>BPP Selector M10.10.0 - Templates Dinámicos</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -20,12 +20,14 @@
         .slot-grid input { margin-right: 4px; }
         .ver-badge { background: #0055aa; color: white; padding: 1px 5px; border-radius: 3px; font-weight: bold; font-size: 10px; }
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; border-top: 1px solid #d8dde6; padding-top: 15px; line-height: 1.8; }
+        .btn-validar { background: #0055aa; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; transition: 0.3s; }
+        .btn-validar:hover { background: #003366; }
     </style>
 </head>
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">BPP Parámetros (M10.7.0)</h1>
+        <h1 class="header-title">BPP Parámetros (M10.10.0)</h1>
     </div>
 
     <div class="container">
@@ -33,8 +35,7 @@
         <div class="card" style="border-left: 4px solid #0055aa;">
             <label>0. Seleccionar Template Visual:</label>
             <select id="master_layout" onchange="update()">
-                <option value="BPP/BPP_Layout_Claro" selected>BPP_Layout_Claro (#8EA3B4)</option>
-                <option value="BPP/BPP_Layout_Oscuro">BPP_Layout_Oscuro (Carbono)</option>
+                <option value="">Cargando templates...</option>
             </select>
         </div>
 
@@ -61,9 +62,17 @@
                     </div>
                 </div>
             </div>
+
             <div id="manual_input_container" style="display:none; background:#f0f7ff; padding:10px; border-radius:4px;">
                 <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#e11d48;">Ingresar SKU Manual:</div>
-                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="margin-bottom:0; text-transform:uppercase; font-weight:bold;" onkeyup="update()">
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="margin-bottom:0; text-transform:uppercase; font-weight:bold; flex: 2;" oninput="update()">
+                    <button type="button" class="btn-validar" style="flex: 1; margin-bottom:0;" onclick="loadLiveImage()">VER FOTO</button>
+                </div>
+                <div id="live_preview_container" style="display:none; text-align: center; margin-top: 10px;">
+                    <img id="live_sku_img" src="" style="max-height: 120px; border: 1px solid #ddd; padding: 5px; background: white;">
+                    <div id="img_status" style="font-size: 10px; color: #888;"></div>
+                </div>
             </div>
         </div>
 
@@ -119,14 +128,48 @@
         </div>
 
         <div class="footer">
-            Implementos S.A. | Arquitectura de Capas Segura v3.0<br>
-            <span class="ver-badge">Motor: M10.7.0-ESTABLE</span>
+            Implementos S.A. | Templates Dinámicos (TXT)<br>
+            <span class="ver-badge">Motor: M10.10.0-ESTABLE</span>
         </div>
     </div>
 
     <script>
-        // Declaración idéntica a la v2.8.6
         var sdk = new window.sfdc.BlockSDK();
+
+        // 1. CARGA DINÁMICA DE TEMPLATES (ASYNC)
+        async function loadTemplates() {
+            var select = document.getElementById('master_layout');
+            try {
+                // El '?t=' evita que el navegador guarde en caché el archivo viejo
+                var response = await fetch('templates.txt?t=' + new Date().getTime());
+                if (response.ok) {
+                    var text = await response.text();
+                    var lines = text.split('\n');
+                    select.innerHTML = ''; // Limpiamos "Cargando..."
+                    
+                    lines.forEach(function(line) {
+                        if (line.trim() !== '') {
+                            var parts = line.split('|');
+                            var val = parts[0].trim();
+                            var label = parts.length > 1 ? parts[1].trim() : val;
+                            var opt = document.createElement('option');
+                            opt.value = val;
+                            opt.innerText = label;
+                            select.appendChild(opt);
+                        }
+                    });
+                } else {
+                    throw new Error("No se encontró templates.txt");
+                }
+            } catch (error) {
+                // Fallback de seguridad si falla la lectura del TXT
+                select.innerHTML = '';
+                var opt = document.createElement('option');
+                opt.value = "BPP_Layout_Claro";
+                opt.innerText = "BPP Layout Claro (Fallback)";
+                select.appendChild(opt);
+            }
+        }
 
         function updateSizesDropdown() {
             var format = document.getElementById('img_format').value;
@@ -143,14 +186,37 @@
             }
         }
 
-        // Función principal idéntica a la v2.8.6
+        function loadLiveImage() {
+            var manualSkuVal = document.getElementById('manual_sku').value.trim().toUpperCase();
+            var format = document.getElementById('img_format').value;
+            var size = document.getElementById('sku_img_size').value;
+            var version = document.getElementById('sku_img_version').value;
+
+            if (manualSkuVal === "") {
+                alert("Escriba un SKU manual primero para visualizarlo.");
+                return;
+            }
+
+            var url = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
+            var container = document.getElementById('live_preview_container');
+            var img = document.getElementById('live_sku_img');
+            var status = document.getElementById('img_status');
+
+            container.style.display = "block";
+            status.innerText = "Cargando...";
+            img.style.display = "none";
+            img.src = url;
+
+            img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
+            img.onerror = function() { status.innerText = "Error: Imagen no encontrada en la librería."; img.style.display = "none"; };
+        }
+
+        // 2. FUNCIÓN DE INYECCIÓN
         function update() {
             var lay = document.getElementById('master_layout').value;
             var dsType = document.getElementById('data_source_type').value;
-            
             var slotNode = document.querySelector('input[name="sku_slot"]:checked');
             var slot = slotNode ? slotNode.value : 'SKU_1';
-            
             var manualSku = document.getElementById('manual_sku').value.toUpperCase().trim();
             var format = document.getElementById('img_format').value;
             var size = document.getElementById('sku_img_size').value;
@@ -161,10 +227,8 @@
             var popOut = document.getElementById('pop_out_offset').value;
             var logoZ = document.getElementById('logo_z_index').value;
 
-            // Manejo UI Local
             document.getElementById('manual_input_container').style.display = (dsType === 'manual') ? 'block' : 'none';
 
-            // Lógica AMPScript idéntica en estructura a v2.8.6
             var logic = "%%[\n" +
                 " SET @data_source_type = '" + dsType + "'\n" +
                 " SET @sku_slot = '" + slot + "'\n" +
@@ -179,20 +243,55 @@
                 " SET @logo_z_index = '" + logoZ + "'\n" +
                 "]%%\n";
 
-            // Renderizado usando OUTPUT(ContentBlockByName) como en v2.8.6
-            var render = "%%[ OUTPUT(ContentBlockByName('" + lay + "')) ]%%";
+            var render = "%%[ IF NOT Empty(@sku_slot) OR NOT Empty(@manual_sku) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
 
-            // Inyección al SDK y setAsset idénticos a v2.8.6
             sdk.setContent(logic + render);
+            
+            var dataToSave = {
+                master_layout: lay, data_source_type: dsType, sku_slot: slot,
+                manual_sku: manualSku, img_format: format, sku_img_size: size,
+                sku_img_version: version, logo_size: logoSize, sufijo1: suf1,
+                sufijo2: suf2, pop_out_offset: popOut, logo_z_index: logoZ
+            };
+
+            sdk.setData(dataToSave);
             sdk.setAsset({
-                "name": "BPP_Selector_M10",
+                "name": "BPP_Selector",
                 "metaData": { "thumbnail": { "url": "https://proveedores.implementos.cl/assets/img/implementos-logo.png" } }
             });
         }
 
-        // Llamada inicial directa como en v2.8.6
-        updateSizesDropdown();
-        update();
+        // 3. SECUENCIA DE ARRANQUE (Asegurando asincronía)
+        window.onload = async function() {
+            // A. Primero cargamos las opciones del TXT
+            await loadTemplates();
+            
+            // B. Configuramos tamaños base
+            updateSizesDropdown();
+
+            // C. Consultamos memoria de Salesforce
+            sdk.getData(function(data) {
+                if (data && Object.keys(data).length > 0) {
+                    if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
+                    if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
+                    if(data.sku_slot) {
+                        var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]');
+                        if(r) r.checked = true;
+                    }
+                    if(data.manual_sku) document.getElementById('manual_sku').value = data.manual_sku;
+                    if(data.img_format) { document.getElementById('img_format').value = data.img_format; updateSizesDropdown(); }
+                    if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
+                    if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
+                    if(data.logo_size) document.getElementById('logo_size').value = data.logo_size;
+                    if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
+                    if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
+                    if(data.pop_out_offset) document.getElementById('pop_out_offset').value = data.pop_out_offset;
+                    if(data.logo_z_index) document.getElementById('logo_z_index').value = data.logo_z_index;
+                }
+                // D. Dibujamos por primera vez
+                update();
+            });
+        };
     </script>
 </body>
 </html>
