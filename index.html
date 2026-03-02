@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor BPP v10.0.0 - Master Control</title>
+    <title>Motor BPP v10.1.0 - Diagnóstico Transparente</title>
     <style>
         body { background-color: #e5e7eb; padding: 20px; margin: 0; font-family: 'Inter', system-ui, sans-serif; }
         .motor-container { max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -16,21 +16,22 @@
         .btn-validar { background: #0055aa; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
         .btn-validar:hover { background: #004488; }
         .btn-main { width: 100%; padding: 15px; background: #e11d48; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px;}
+        /* NUEVO: Caja de salida de código para diagnóstico */
+        #output_code { width: 100%; height: 180px; background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; border: 1px solid #333; margin-top: 15px; display: none; box-sizing: border-box; }
     </style>
-    <script src="https://developer.salesforce.com/docs/marketing/marketing-cloud/guide/assets/blocksdk.js"></script>
 </head>
 <body>
 
 <div class="motor-container">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">M10.0.0</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">M10.1.0</span></h3>
     </div>
 
     <form id="bpp-config-form">
         <div class="section-box" style="border-left: 5px solid #0055aa;">
             <label style="color: #0055aa; text-transform: uppercase;">0. Selección de Template (Directorio BPP)</label>
-            <select id="master_layout" onchange="syncToSFMC()">
+            <select id="master_layout">
                 <option value="BPP/BPP_Layout_Claro" selected>BPP/BPP_Layout_Claro (Oficial)</option>
                 <option value="BPP/BPP_Layout_Oscuro">BPP/BPP_Layout_Oscuro (Carbono)</option>
             </select>
@@ -41,7 +42,7 @@
             <div style="display: flex; gap: 10px; margin-top: 8px;">
                 <div style="flex: 1;">
                     <label>Tipo de Origen:</label>
-                    <select id="data_source_type" onchange="updateUI(); syncToSFMC();">
+                    <select id="data_source_type" onchange="updateUI()">
                         <option value="parametric" selected>Paramétrico (Config_DE)</option>
                         <option value="recommended">Recomendado (Audiencia)</option>
                         <option value="manual">Manual (Digitado)</option>
@@ -50,19 +51,19 @@
                 <div style="flex: 1.5;">
                     <label>Slot Destino (Columnas DE):</label>
                     <div class="slot-grid">
-                        <label><input type="radio" name="sku_slot" value="SKU_1" checked onchange="syncToSFMC()"> 1</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_2" onchange="syncToSFMC()"> 2</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_3" onchange="syncToSFMC()"> 3</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_4" onchange="syncToSFMC()"> 4</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_5" onchange="syncToSFMC()"> 5</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_6" onchange="syncToSFMC()"> 6</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_1" checked onchange="updateUI()"> 1</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_2" onchange="updateUI()"> 2</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_3" onchange="updateUI()"> 3</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_4" onchange="updateUI()"> 4</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_5" onchange="updateUI()"> 5</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_6" onchange="updateUI()"> 6</label>
                     </div>
                 </div>
             </div>
 
             <div id="manual_input_container" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
                 <label style="color: #e11d48;">Ingresar SKU Manual:</label>
-                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="font-weight: bold; text-transform: uppercase;" onkeyup="updateUI(); syncToSFMC();">
+                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="font-weight: bold; text-transform: uppercase;" onkeyup="updateUI()">
             </div>
         </div>
 
@@ -71,24 +72,28 @@
             <div style="display: flex; gap: 10px; margin-top: 8px;">
                 <div style="flex: 1;">
                     <label>Formato:</label>
-                    <select id="img_format" onchange="updateSizes(); syncToSFMC();">
+                    <select id="img_format" onchange="updateSizes(); updateUI();">
                         <option value="png">PNG</option>
                         <option value="jpg">JPG</option>
                     </select>
                 </div>
                 <div style="flex: 1;">
                     <label>Tamaño:</label>
-                    <select id="sku_img_size" onchange="updateUI(); syncToSFMC();"><option value="h/">h</option></select>
+                    <select id="sku_img_size" onchange="updateUI()">
+                        <option value="h/">h</option>
+                    </select>
                 </div>
                 <div style="flex: 1;">
                     <label>Versión Foto:</label>
-                    <select id="sku_img_version" onchange="updateUI(); syncToSFMC();">
+                    <select id="sku_img_version" onchange="updateUI()">
                         <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option>
                         <option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option>
                     </select>
                 </div>
             </div>
-            <div class="preview-box">URL SKU: <span id="preview_url_sku">...</span></div>
+            <div class="preview-box">
+                URL SKU: <span id="preview_url_sku">...</span>
+            </div>
             <button type="button" class="btn-validar" id="btn_validar" style="display:none;" onclick="loadLiveImage()">VER PREVISUALIZACIÓN FOTO</button>
             <div id="live_preview_container" style="display:none; text-align: center; margin-top: 10px;">
                 <img id="live_sku_img" src="" style="max-height: 120px; border: 1px solid #ddd; padding: 5px; background: white;">
@@ -100,22 +105,26 @@
             <div style="display: flex; gap: 10px; margin-top: 8px;">
                 <div style="flex: 1;">
                     <label>Variante (V1-V9):</label>
-                    <select id="logo_v" onchange="updateUI(); syncToSFMC();">
+                    <select id="logo_v" onchange="updateUI()">
                         <option value="-1">V1</option><option value="-2">V2</option><option value="-3">V3</option>
                     </select>
                 </div>
                 <div style="flex: 1;">
                     <label>Pantone:</label>
-                    <select id="logo_p" onchange="updateUI(); syncToSFMC();">
-                        <option value="_C">Color (C)</option><option value="_B">Blanco (B)</option><option value="_N">Negro (N)</option>
+                    <select id="logo_p" onchange="updateUI()">
+                        <option value="_C">Color (C)</option>
+                        <option value="_B">Blanco (B)</option>
+                        <option value="_N">Negro (N)</option>
                     </select>
                 </div>
                 <div style="flex: 1;">
                     <label>Tamaño (px):</label>
-                    <input type="number" id="logo_size" value="70" oninput="updateUI(); syncToSFMC();">
+                    <input type="number" id="logo_size" value="70" oninput="updateUI()">
                 </div>
             </div>
-            <div class="preview-box">URL LOGO: <span id="preview_url_logo">...</span></div>
+            <div class="preview-box">
+                URL LOGO: <span id="preview_url_logo">...</span>
+            </div>
         </div>
 
         <div class="section-box">
@@ -123,32 +132,32 @@
             <div style="display: flex; gap: 10px; margin-top: 8px;">
                 <div style="flex: 1;">
                     <label>Elevación SKU (px):</label>
-                    <input type="number" id="pop_out_offset" value="50" oninput="syncToSFMC()">
+                    <input type="number" id="pop_out_offset" value="50" oninput="updateUI()">
                 </div>
                 <div style="flex: 1;">
                     <label>Z-Index Logo:</label>
-                    <select id="logo_z" onchange="syncToSFMC()">
-                        <option value="15">Encima de Foto</option><option value="5">Detrás de Foto</option>
+                    <select id="logo_z" onchange="updateUI()">
+                        <option value="15">Encima de Foto</option>
+                        <option value="5">Detrás de Foto</option>
                     </select>
                 </div>
             </div>
         </div>
 
-        <button type="button" class="btn-main" onclick="syncToSFMC()">FORZAR SINCRONIZACIÓN AL LIENZO</button>
-        <div id="status_msg" style="color:green; font-weight:bold; font-size:11px; text-align:center; display:none; margin-top:5px;">Sincronizado correctamente.</div>
+        <button type="button" class="btn-main" onclick="generarCodigoPrueba()">GENERAR Y VER BLOQUE AMPSCRIPT</button>
+        
+        <textarea id="output_code" readonly></textarea>
     </form>
 </div>
 
 <script>
-    var sdk = new window.sfdc.BlockSDK();
-
-    // Función pura de Interfaz
     function updateUI() {
         var type = document.getElementById('data_source_type').value;
         var manualInput = document.getElementById('manual_input_container');
         var btnValidar = document.getElementById('btn_validar');
-        var manualSkuVal = document.getElementById('manual_sku').value.trim().toUpperCase();
+        var manualSkuVal = document.getElementById('manual_sku').value.trim();
 
+        // Mostrar controles según origen
         if (type === 'manual') {
             manualInput.style.display = 'block';
             btnValidar.style.display = 'block';
@@ -158,6 +167,7 @@
             manualSkuVal = "@SKU";
         }
 
+        // Construir URL SKU
         var format = document.getElementById('img_format').value;
         var size = document.getElementById('sku_img_size').value;
         var version = document.getElementById('sku_img_version').value;
@@ -165,24 +175,21 @@
         var finalSkuUrl = "https://images.implementos.cl/img/" + size + skuPath + version + "." + format;
         document.getElementById('preview_url_sku').innerText = finalSkuUrl;
 
+        // Construir URL LOGO
         var l_v = document.getElementById('logo_v').value;
         var l_p = document.getElementById('logo_p').value;
         document.getElementById('preview_url_logo').innerText = "https://images.implementos.cl/marcas/h/logo_@MARCA" + l_v + l_p + ".png";
     }
 
-    // Actualiza Selectores
     function updateSizes() {
         var format = document.getElementById('img_format').value;
         var sizeSelect = document.getElementById('sku_img_size');
-        var currVal = sizeSelect.value;
         sizeSelect.innerHTML = "";
-        var options = (format === 'png') ? [['h/', 'h/'], ['m/', 'm/'], ['s/', 's/']] : [['1000/', '1000/'], ['600/', '600/'], ['350/', '350/']];
-        options.forEach(function(opt) {
+        var options = (format === 'png') ? [['h/', 'h'], ['m/', 'm'], ['s/', 's']] : [['1000/', '1000'], ['600/', '600'], ['350/', '350']];
+        options.forEach(opt => {
             var el = document.createElement("option"); el.value = opt[0]; el.innerText = opt[1];
             sizeSelect.appendChild(el);
         });
-        // Restaura si existe
-        if (Array.from(sizeSelect.options).some(o => o.value === currVal)) { sizeSelect.value = currVal; }
     }
 
     function loadLiveImage() {
@@ -194,12 +201,12 @@
         img.src = url;
     }
 
-    // ==========================================
-    // CEREBRO SDK: RECOLECCIÓN Y ENVÍO A SFMC
-    // ==========================================
-    function syncToSFMC() {
-        // 1. Recolectar datos actuales de la UI
+    // ==============================================================
+    // NUEVA FUNCIÓN DE DIAGNÓSTICO: CONSTRUYE EL CÓDIGO Y LO MUESTRA
+    // ==============================================================
+    function generarCodigoPrueba() {
         var currentSlot = document.querySelector('input[name="sku_slot"]:checked');
+        
         var data = {
             master_layout: document.getElementById('master_layout').value,
             data_source_type: document.getElementById('data_source_type').value,
@@ -212,10 +219,9 @@
             sufijo1: document.getElementById('logo_v').value,
             sufijo2: document.getElementById('logo_p').value,
             pop_out_offset: document.getElementById('pop_out_offset').value,
-            logo_z_index: document.getElementById('logo_z').value // mapeado desde 'logo_z' a 'logo_z_index'
+            logo_z_index: document.getElementById('logo_z').value
         };
 
-        // 2. Crear AMPScript EXACTO que requiere el Template T10.0.0
         var code = "%%[\n";
         code += " SET @data_source_type = '" + data.data_source_type + "'\n";
         code += " SET @sku_slot = '" + data.sku_slot + "'\n";
@@ -229,62 +235,17 @@
         code += " SET @pop_out_offset = '" + data.pop_out_offset + "'\n";
         code += " SET @logo_z_index = '" + data.logo_z_index + "'\n";
         code += "]%%\n";
-
-        // 3. INYECCIÓN DEL RECUADRO DE DIAGNÓSTICO EN EL LIENZO (Comprobación visual)
-        code += "<div style='background:#1a1a1a; color:#0f0; padding:10px; font-family:monospace; font-size:11px; margin-bottom:10px; border-left:4px solid #e11d48;'>";
-        code += "<strong>DIAGNÓSTICO EN LIENZO (M10.0.0)</strong><br>";
-        code += "Origen: " + data.data_source_type + " | Slot: " + data.sku_slot + "<br>";
-        code += "Manual SKU: " + data.manual_sku + "<br>";
-        code += "Template: " + data.master_layout;
-        code += "</div>\n";
-
-        // 4. Llamada al Objeto Template
         code += "%%=ContentBlockByName('" + data.master_layout + "')=%%";
 
-        // 5. Guardar Memoria y Renderizar
-        sdk.setData(data, function() {
-            sdk.setContent(code, function() {
-                var msg = document.getElementById('status_msg');
-                msg.style.display = 'block';
-                setTimeout(function() { msg.style.display = 'none'; }, 2000);
-            });
-        });
+        // Muestra el código en la caja negra del fondo
+        var outBox = document.getElementById('output_code');
+        outBox.value = code;
+        outBox.style.display = 'block';
     }
 
-    // ==========================================
-    // HIDRATACIÓN: AL ABRIR UN BLOQUE YA CREADO
-    // ==========================================
-    window.onload = function() {
-        updateSizes(); // Configurar listas iniciales
-        
-        sdk.getData(function (data) {
-            // Si hay datos, rellenamos el formulario
-            if (data && Object.keys(data).length > 0) {
-                if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
-                if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
-                if(data.sku_slot) {
-                    var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]');
-                    if(r) r.checked = true;
-                }
-                if(data.manual_sku) document.getElementById('manual_sku').value = data.manual_sku;
-                if(data.img_format) document.getElementById('img_format').value = data.img_format;
-                
-                updateSizes(); // Actualizamos dropdown basado en el formato recuperado
-                
-                if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
-                if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
-                if(data.logo_size) document.getElementById('logo_size').value = data.logo_size;
-                if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
-                if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
-                if(data.pop_out_offset) document.getElementById('pop_out_offset').value = data.pop_out_offset;
-                if(data.logo_z_index) document.getElementById('logo_z').value = data.logo_z_index;
-            }
-            
-            updateUI(); // Refresca las vistas previas locales
-            syncToSFMC(); // DISPARA LA INYECCIÓN INMEDIATA AL ARRASTRAR
-        });
-    };
+    window.onload = function() { updateSizes(); updateUI(); };
 </script>
 
 </body>
 </html>
+
