@@ -1,4 +1,4 @@
-BPP_Layout_Claro
-BPP_Layout_Oscuro
-BPP_Layout_Gris
-BPP_Layout_Gris_600
+BPP_Layout_Claro|Template Azul claro de 300px
+BPP_Layout_Oscuro|Template de Fondo negro
+BPP_Layout_Gris|Tempalte Gris Simple 300px
+BPP_Layout_Gris_600|Template Gris Doble ancho 600px
