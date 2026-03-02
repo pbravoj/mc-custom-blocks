@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.10.0 - Templates Dinámicos</title>
+    <title>BPP Selector M10.11.0 - Posicionamiento Avanzado</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -27,7 +27,7 @@
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">BPP Parámetros (M10.10.0)</h1>
+        <h1 class="header-title">BPP Parámetros (M10.11.0)</h1>
     </div>
 
     <div class="container">
@@ -100,7 +100,7 @@
         </div>
 
         <div class="card">
-            <label>3. Ajustes Visuales (Marca y Capas):</label>
+            <label>3. Ajustes Visuales (Marca y Capas Clásicas):</label>
             <div class="flex-row">
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Variante Logo:</div>
@@ -127,46 +127,83 @@
             </div>
         </div>
 
+        <div class="card" style="border-left: 4px solid #e11d48;">
+            <label>4. Ajustes de Imagen del Producto (SKU):</label>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Posición en Tarjeta:</div>
+                    <select id="sku_img_placement" onchange="update()">
+                        <option value="fuera" selected>Fuera (Sobresale)</option>
+                        <option value="dentro">Dentro (Contenida)</option>
+                    </select>
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Desplazamiento (px):</div>
+                    <input type="number" id="sku_img_offset_new" value="55" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Tamaño Ancho (%):</div>
+                    <input type="number" id="sku_img_width" value="85" oninput="update()">
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #e11d48;">
+            <label>5. Ubicación Avanzada del Logo (Marca):</label>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Posición en Esquina:</div>
+                    <select id="logo_position" onchange="update()">
+                        <option value="SD">Superior Derecha (SD)</option>
+                        <option value="SI">Superior Izquierda (SI)</option>
+                        <option value="ID" selected>Inferior Derecha (ID)</option>
+                        <option value="II">Inferior Izquierda (II)</option>
+                    </select>
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Tamaño (%):</div>
+                    <input type="number" id="logo_size_percent" value="30" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Distancia (px):</div>
+                    <input type="number" id="logo_distance" value="15" oninput="update()">
+                </div>
+            </div>
+        </div>
+
         <div class="footer">
-            Implementos S.A. | Templates Dinámicos (TXT)<br>
-            <span class="ver-badge">Motor: M10.10.0-ESTABLE</span>
+            Implementos S.A. | Posicionamiento Dinámico<br>
+            <span class="ver-badge">Motor: M10.11.0-ESTABLE</span>
         </div>
     </div>
 
     <script>
         var sdk = new window.sfdc.BlockSDK();
 
-        // 1. CARGA DINÁMICA DE TEMPLATES (ASYNC)
+        // Carga de Templates TXT
         async function loadTemplates() {
             var select = document.getElementById('master_layout');
             try {
-                // El '?t=' evita que el navegador guarde en caché el archivo viejo
                 var response = await fetch('templates.txt?t=' + new Date().getTime());
                 if (response.ok) {
                     var text = await response.text();
                     var lines = text.split('\n');
-                    select.innerHTML = ''; // Limpiamos "Cargando..."
-                    
+                    select.innerHTML = ''; 
                     lines.forEach(function(line) {
                         if (line.trim() !== '') {
                             var parts = line.split('|');
                             var val = parts[0].trim();
                             var label = parts.length > 1 ? parts[1].trim() : val;
                             var opt = document.createElement('option');
-                            opt.value = val;
-                            opt.innerText = label;
+                            opt.value = val; opt.innerText = label;
                             select.appendChild(opt);
                         }
                     });
-                } else {
-                    throw new Error("No se encontró templates.txt");
-                }
+                } else { throw new Error("No se encontró templates.txt"); }
             } catch (error) {
-                // Fallback de seguridad si falla la lectura del TXT
                 select.innerHTML = '';
                 var opt = document.createElement('option');
-                opt.value = "BPP_Layout_Claro";
-                opt.innerText = "BPP Layout Claro (Fallback)";
+                opt.value = "BPP_Layout_Claro"; opt.innerText = "BPP Layout Claro (Fallback)";
                 select.appendChild(opt);
             }
         }
@@ -192,10 +229,7 @@
             var size = document.getElementById('sku_img_size').value;
             var version = document.getElementById('sku_img_version').value;
 
-            if (manualSkuVal === "") {
-                alert("Escriba un SKU manual primero para visualizarlo.");
-                return;
-            }
+            if (manualSkuVal === "") { alert("Escriba un SKU manual primero para visualizarlo."); return; }
 
             var url = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
             var container = document.getElementById('live_preview_container');
@@ -203,16 +237,13 @@
             var status = document.getElementById('img_status');
 
             container.style.display = "block";
-            status.innerText = "Cargando...";
-            img.style.display = "none";
-            img.src = url;
-
+            status.innerText = "Cargando..."; img.style.display = "none"; img.src = url;
             img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
             img.onerror = function() { status.innerText = "Error: Imagen no encontrada en la librería."; img.style.display = "none"; };
         }
 
-        // 2. FUNCIÓN DE INYECCIÓN
         function update() {
+            // Recolección de variables clásicas
             var lay = document.getElementById('master_layout').value;
             var dsType = document.getElementById('data_source_type').value;
             var slotNode = document.querySelector('input[name="sku_slot"]:checked');
@@ -227,8 +258,17 @@
             var popOut = document.getElementById('pop_out_offset').value;
             var logoZ = document.getElementById('logo_z_index').value;
 
+            // Recolección de variables NUEVAS (Secciones 4 y 5)
+            var skuImgPlacement = document.getElementById('sku_img_placement').value;
+            var skuImgOffsetNew = document.getElementById('sku_img_offset_new').value;
+            var skuImgWidth = document.getElementById('sku_img_width').value;
+            var logoPos = document.getElementById('logo_position').value;
+            var logoSizePct = document.getElementById('logo_size_percent').value;
+            var logoDist = document.getElementById('logo_distance').value;
+
             document.getElementById('manual_input_container').style.display = (dsType === 'manual') ? 'block' : 'none';
 
+            // Inyección al AMPScript
             var logic = "%%[\n" +
                 " SET @data_source_type = '" + dsType + "'\n" +
                 " SET @sku_slot = '" + slot + "'\n" +
@@ -241,17 +281,27 @@
                 " SET @sufijo2 = '" + suf2 + "'\n" +
                 " SET @pop_out_offset = '" + popOut + "'\n" +
                 " SET @logo_z_index = '" + logoZ + "'\n" +
+                " /* NUEVAS VARIABLES M10.11.0 */ \n" +
+                " SET @sku_img_placement = '" + skuImgPlacement + "'\n" +
+                " SET @sku_img_offset_new = '" + skuImgOffsetNew + "'\n" +
+                " SET @sku_img_width = '" + skuImgWidth + "'\n" +
+                " SET @logo_position = '" + logoPos + "'\n" +
+                " SET @logo_size_percent = '" + logoSizePct + "'\n" +
+                " SET @logo_distance = '" + logoDist + "'\n" +
                 "]%%\n";
 
             var render = "%%[ IF NOT Empty(@sku_slot) OR NOT Empty(@manual_sku) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
 
             sdk.setContent(logic + render);
             
+            // Guardado en Memoria
             var dataToSave = {
                 master_layout: lay, data_source_type: dsType, sku_slot: slot,
                 manual_sku: manualSku, img_format: format, sku_img_size: size,
                 sku_img_version: version, logo_size: logoSize, sufijo1: suf1,
-                sufijo2: suf2, pop_out_offset: popOut, logo_z_index: logoZ
+                sufijo2: suf2, pop_out_offset: popOut, logo_z_index: logoZ,
+                sku_img_placement: skuImgPlacement, sku_img_offset_new: skuImgOffsetNew, sku_img_width: skuImgWidth,
+                logo_position: logoPos, logo_size_percent: logoSizePct, logo_distance: logoDist
             };
 
             sdk.setData(dataToSave);
@@ -261,15 +311,10 @@
             });
         }
 
-        // 3. SECUENCIA DE ARRANQUE (Asegurando asincronía)
         window.onload = async function() {
-            // A. Primero cargamos las opciones del TXT
             await loadTemplates();
-            
-            // B. Configuramos tamaños base
             updateSizesDropdown();
 
-            // C. Consultamos memoria de Salesforce
             sdk.getData(function(data) {
                 if (data && Object.keys(data).length > 0) {
                     if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
@@ -287,8 +332,15 @@
                     if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
                     if(data.pop_out_offset) document.getElementById('pop_out_offset').value = data.pop_out_offset;
                     if(data.logo_z_index) document.getElementById('logo_z_index').value = data.logo_z_index;
+                    
+                    // Recuperar campos nuevos
+                    if(data.sku_img_placement) document.getElementById('sku_img_placement').value = data.sku_img_placement;
+                    if(data.sku_img_offset_new) document.getElementById('sku_img_offset_new').value = data.sku_img_offset_new;
+                    if(data.sku_img_width) document.getElementById('sku_img_width').value = data.sku_img_width;
+                    if(data.logo_position) document.getElementById('logo_position').value = data.logo_position;
+                    if(data.logo_size_percent) document.getElementById('logo_size_percent').value = data.logo_size_percent;
+                    if(data.logo_distance) document.getElementById('logo_distance').value = data.logo_distance;
                 }
-                // D. Dibujamos por primera vez
                 update();
             });
         };
