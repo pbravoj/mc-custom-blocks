@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.14.0 - Jerarquía de Textos</title>
+    <title>BPP Selector M10.15.0 - Z-Layering & Checkboxes</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -29,14 +29,14 @@
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; padding-top: 15px; }
         .btn-validar { background: #0055aa; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
         
-        .checkbox-group { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #444;}
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #444; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee;}
         .checkbox-group input { width: auto; margin-right: 8px; margin-bottom: 0;}
     </style>
 </head>
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">Configurador BPP (M10.14.0)</h1>
+        <h1 class="header-title">Configurador BPP (M10.15.0)</h1>
     </div>
 
     <div class="container">
@@ -55,14 +55,9 @@
             </select>
 
             <label style="color: #e11d48; margin-top: 15px;">Diagnóstico</label>
-            <div class="flex-row">
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Panel Debug (Ocultar en Producción):</div>
-                    <select id="show_debug" onchange="update()">
-                        <option value="false" selected>Ocultar</option>
-                        <option value="true">Mostrar Panel</option>
-                    </select>
-                </div>
+            <div class="checkbox-group" style="border-color: #e11d48; background: #fff5f5;">
+                <input type="checkbox" id="show_debug" onchange="update()"> 
+                <span style="color: #e11d48;">Mostrar Panel Debug en Salesforce (Ocultar para producción)</span>
             </div>
         </div>
 
@@ -106,7 +101,7 @@
                     <input type="number" id="sku_img_offset_new" value="55" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho de la Foto (%):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho (%):</div>
                     <input type="number" id="sku_img_width" value="85" oninput="update()">
                 </div>
             </div>
@@ -117,9 +112,9 @@
             <div class="flex-row">
                 <select id="logo_v" class="flex-col" onchange="update()"><option value="-1">V1</option><option value="-2">V2</option></select>
                 <select id="logo_p" class="flex-col" onchange="update()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
-                <select id="logo_z_index" class="flex-col" onchange="update()"><option value="15">Encima Foto</option><option value="5">Detrás Foto</option></select>
+                <select id="logo_z_index" class="flex-col" onchange="update()"><option value="15">15 - Encima Foto</option><option value="5">5 - Detrás Foto</option></select>
             </div>
-            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Absoluto en la Tarjeta)</label>
+            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Capa Absoluta)</label>
             <div class="flex-row">
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Esquina:</div>
@@ -151,7 +146,7 @@
             <div class="flex-row">
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Bajar Textos desde Foto:</div>
-                    <input type="number" id="space_photo_to_sku" value="15" oninput="update()" title="Aumenta esto si los textos se montan en la foto">
+                    <input type="number" id="space_photo_to_sku" value="15" oninput="update()">
                 </div>
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Bajo Texto SKU (px):</div>
@@ -165,7 +160,7 @@
         </div>
 
         <div class="footer">
-            Implementos S.A. | M10.14.0 (Jerarquía Estricta)
+            Implementos S.A. | M10.15.0 (Z-Layer Fix)
         </div>
     </div>
 
@@ -234,8 +229,9 @@
             var logoPos = document.getElementById('logo_position').value;
             var logoSizePct = document.getElementById('logo_size_percent').value;
             var logoDist = document.getElementById('logo_distance').value;
-            var showDebug = document.getElementById('show_debug').value;
-
+            
+            // Checkboxes extraídos como strings explícitos para el AMPScript
+            var showDebug = document.getElementById('show_debug').checked ? "true" : "false";
             var showName = document.getElementById('show_name').checked ? "true" : "false";
             var showDesc1 = document.getElementById('show_desc1').checked ? "true" : "false";
             var showDesc2 = document.getElementById('show_desc2').checked ? "true" : "false";
@@ -310,11 +306,12 @@
                     if(data.logo_position) document.getElementById('logo_position').value = data.logo_position;
                     if(data.logo_size_percent) document.getElementById('logo_size_percent').value = data.logo_size_percent;
                     if(data.logo_distance) document.getElementById('logo_distance').value = data.logo_distance;
-                    if(data.show_debug) document.getElementById('show_debug').value = data.show_debug;
                     
-                    if(data.show_name) document.getElementById('show_name').checked = (data.show_name === "true");
-                    if(data.show_desc1) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
-                    if(data.show_desc2) document.getElementById('show_desc2').checked = (data.show_desc2 === "true");
+                    // CORRECCIÓN LECTURA DE CHECKBOXES (Convierte string a booleano real)
+                    if(data.show_debug !== undefined) document.getElementById('show_debug').checked = (data.show_debug === "true");
+                    if(data.show_name !== undefined) document.getElementById('show_name').checked = (data.show_name === "true");
+                    if(data.show_desc1 !== undefined) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
+                    if(data.show_desc2 !== undefined) document.getElementById('show_desc2').checked = (data.show_desc2 === "true");
                     
                     if(data.space_photo_to_sku) document.getElementById('space_photo_to_sku').value = data.space_photo_to_sku;
                     if(data.space_sku_to_name) document.getElementById('space_sku_to_name').value = data.space_sku_to_name;
