@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motor BPP v10.2.0 - Conexión SDK</title>
+    <title>Motor BPP v10.3.0 - Diagnostic Test</title>
     <style>
         body { background-color: #e5e7eb; padding: 20px; margin: 0; font-family: 'Inter', system-ui, sans-serif; }
         .motor-container { max-width: 680px; margin: auto; padding: 15px; background: #f4f6f9; border-radius: 12px; border: 1px solid #ddd; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .section-box { margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee; }
-        .preview-box { background: #222; color: #00ff00; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 10px; word-break: break-all; border-left: 4px solid #0055aa; margin-top: 8px; }
         label { font-size: 11px; font-weight: bold; color: #444; }
         select, input { width: 100%; padding: 6px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; margin-top: 4px; }
         input[type="radio"] { width: auto; margin-right: 4px; }
         .slot-grid { display: flex; justify-content: space-between; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
-        .btn-validar { background: #0055aa; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        .btn-validar:hover { background: #004488; }
-        .btn-main { width: 100%; padding: 15px; background: #e11d48; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; margin-top: 10px;}
-        #output_code { width: 100%; height: 130px; background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; border: 1px solid #333; margin-top: 10px; display: none; box-sizing: border-box; }
-        #status_msg { color: green; font-weight: bold; font-size: 11px; text-align: center; display: none; margin-top: 5px; }
+        
+        /* BOTONES DE DIAGNÓSTICO */
+        .btn-test { width: 100%; padding: 15px; background: #ffaa00; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);}
+        .btn-test:hover { background: #e69900; }
+        .btn-main { width: 100%; padding: 15px; background: #e11d48; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 10px;}
+        
+        #output_code { width: 100%; height: 100px; background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; border: 1px solid #333; margin-top: 10px; display: none; box-sizing: border-box; }
     </style>
     <script src="https://developer.salesforce.com/docs/marketing/marketing-cloud/guide/assets/blocksdk.js"></script>
 </head>
@@ -26,16 +27,18 @@
 <div class="motor-container">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" height="35" alt="Implementos">
-        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro BPP <span style="font-size: 11px; color: #e11d48;">M10.2.0</span></h3>
+        <h3 style="color: #333; margin: 0; font-size: 16px;">Configurador Maestro <span style="font-size: 11px; color: #e11d48;">M10.3.0</span></h3>
     </div>
+
+    <button type="button" class="btn-test" onclick="probarConexionSDK()">🚨 PASO 1: PROBAR CONEXIÓN BÁSICA (Click Aquí)</button>
+    
+    <hr style="margin: 20px 0; border: 1px solid #ddd;">
 
     <form id="bpp-config-form">
         <div class="section-box" style="border-left: 5px solid #0055aa;">
-            <label style="color: #0055aa; text-transform: uppercase;">0. Selección de Template (Directorio BPP)</label>
-            <select id="master_layout" onchange="updateUI()">
-                <option value="BPP/BPP_Layout_Claro" selected>BPP/BPP_Layout_Claro (Oficial)</option>
-                <option value="BPP/BPP_Layout_Oscuro">BPP/BPP_Layout_Oscuro (Carbono)</option>
-            </select>
+            <label style="color: #0055aa; text-transform: uppercase;">0. Ruta del Template en SFMC</label>
+            <input type="text" id="master_layout" value="BPP/BPP_Layout_Claro" style="font-weight: bold; color:#e11d48;" oninput="updateUI()">
+            <div style="font-size:9px; color:#666; margin-top:4px;">Asegúrese de que el bloque exista exactamente en esta ruta o Salesforce dejará el lienzo en blanco.</div>
         </div>
         
         <div class="section-box">
@@ -44,182 +47,73 @@
                 <div style="flex: 1;">
                     <label>Tipo de Origen:</label>
                     <select id="data_source_type" onchange="updateUI()">
-                        <option value="parametric" selected>Paramétrico (Config_DE)</option>
-                        <option value="recommended">Recomendado (Audiencia)</option>
-                        <option value="manual">Manual (Digitado)</option>
+                        <option value="parametric" selected>Paramétrico</option>
+                        <option value="recommended">Recomendado</option>
+                        <option value="manual">Manual</option>
                     </select>
                 </div>
                 <div style="flex: 1.5;">
-                    <label>Slot Destino (Columnas DE):</label>
+                    <label>Slot Destino:</label>
                     <div class="slot-grid">
-                        <label><input type="radio" name="sku_slot" value="SKU_1" checked onchange="updateUI()"> 1</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_2" onchange="updateUI()"> 2</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_3" onchange="updateUI()"> 3</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_4" onchange="updateUI()"> 4</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_5" onchange="updateUI()"> 5</label>
-                        <label><input type="radio" name="sku_slot" value="SKU_6" onchange="updateUI()"> 6</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_1" checked> 1</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_2"> 2</label>
+                        <label><input type="radio" name="sku_slot" value="SKU_3"> 3</label>
                     </div>
                 </div>
             </div>
-
-            <div id="manual_input_container" style="display:none; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+            <div id="manual_input_container" style="display:none; margin-top: 10px;">
                 <label style="color: #e11d48;">Ingresar SKU Manual:</label>
                 <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="font-weight: bold; text-transform: uppercase;" onkeyup="updateUI()">
             </div>
         </div>
 
         <div class="section-box">
-            <label style="color: #0055aa; text-transform: uppercase;">2. Librerías de Imagen SKU</label>
+            <label style="color: #0055aa; text-transform: uppercase;">2. Formato y Ajustes</label>
             <div style="display: flex; gap: 10px; margin-top: 8px;">
-                <div style="flex: 1;">
-                    <label>Formato:</label>
-                    <select id="img_format" onchange="updateSizes(); updateUI();">
-                        <option value="png">PNG</option>
-                        <option value="jpg">JPG</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label>Tamaño:</label>
-                    <select id="sku_img_size" onchange="updateUI()">
-                        <option value="h/">h</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label>Versión Foto:</label>
-                    <select id="sku_img_version" onchange="updateUI()">
-                        <option value="-1">-1</option><option value="-2">-2</option><option value="-3">-3</option>
-                        <option value="-4">-4</option><option value="-5">-5</option><option value="-6">-6</option>
-                    </select>
-                </div>
-            </div>
-            <div class="preview-box">
-                URL SKU: <span id="preview_url_sku">...</span>
-            </div>
-            <button type="button" class="btn-validar" id="btn_validar" style="display:none;" onclick="loadLiveImage()">VER PREVISUALIZACIÓN FOTO</button>
-            <div id="live_preview_container" style="display:none; text-align: center; margin-top: 10px;">
-                <img id="live_sku_img" src="" style="max-height: 120px; border: 1px solid #ddd; padding: 5px; background: white;">
+                <select id="img_format" onchange="updateSizes(); updateUI();"><option value="png">PNG</option><option value="jpg">JPG</option></select>
+                <select id="sku_img_size"><option value="h/">h/</option></select>
+                <select id="sku_img_version"><option value="-1">-1</option></select>
             </div>
         </div>
 
-        <div class="section-box">
-            <label style="color: #0055aa; text-transform: uppercase;">3. Configuración Logo Marca</label>
-            <div style="display: flex; gap: 10px; margin-top: 8px;">
-                <div style="flex: 1;">
-                    <label>Variante (V1-V9):</label>
-                    <select id="logo_v" onchange="updateUI()">
-                        <option value="-1">V1</option><option value="-2">V2</option><option value="-3">V3</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label>Pantone:</label>
-                    <select id="logo_p" onchange="updateUI()">
-                        <option value="_C">Color (C)</option>
-                        <option value="_B">Blanco (B)</option>
-                        <option value="_N">Negro (N)</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label>Tamaño (px):</label>
-                    <input type="number" id="logo_size" value="70" oninput="updateUI()">
-                </div>
-            </div>
-            <div class="preview-box">
-                URL LOGO: <span id="preview_url_logo">...</span>
-            </div>
-        </div>
-
-        <div class="section-box">
-            <label style="color: #0055aa; text-transform: uppercase;">4. Ajustes de Capas</label>
-            <div style="display: flex; gap: 10px; margin-top: 8px;">
-                <div style="flex: 1;">
-                    <label>Elevación SKU (px):</label>
-                    <input type="number" id="pop_out_offset" value="50" oninput="updateUI()">
-                </div>
-                <div style="flex: 1;">
-                    <label>Z-Index Logo:</label>
-                    <select id="logo_z" onchange="updateUI()">
-                        <option value="15">Encima de Foto</option>
-                        <option value="5">Detrás de Foto</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <button type="button" class="btn-main" onclick="syncToSalesforce()">APLICAR CAMBIOS Y VER CÓDIGO</button>
-        <div id="status_msg">✓ Lienzo actualizado en Salesforce.</div>
-        
+        <button type="button" class="btn-main" onclick="syncToSalesforce()">PASO 2: APLICAR AL LIENZO (CÓDIGO REAL)</button>
         <textarea id="output_code" readonly></textarea>
     </form>
 </div>
 
 <script>
-    // INICIALIZACIÓN DEL SDK
     var sdk = new window.sfdc.BlockSDK();
 
-    function updateUI() {
-        var type = document.getElementById('data_source_type').value;
-        var manualInput = document.getElementById('manual_input_container');
-        var btnValidar = document.getElementById('btn_validar');
-        var manualSkuVal = document.getElementById('manual_sku').value.trim();
+    // ==========================================
+    // FUNCIÓN DE DIAGNÓSTICO (BOTÓN AMARILLO)
+    // ==========================================
+    function probarConexionSDK() {
+        var testCode = "<div style='background-color:#ffaa00; padding:30px; text-align:center; border-radius:10px;'>";
+        testCode += "<h1 style='color:#000;'>¡EL PUENTE SDK FUNCIONA!</h1>";
+        testCode += "<p style='color:#000;'>Si estás viendo este cuadro amarillo, significa que el Motor sí puede escribir en Salesforce y no hay bloqueos.</p>";
+        testCode += "</div>";
 
-        if (type === 'manual') {
-            manualInput.style.display = 'block';
-            btnValidar.style.display = 'block';
-        } else {
-            manualInput.style.display = 'none';
-            btnValidar.style.display = 'none';
-            manualSkuVal = "@SKU";
-        }
-
-        var format = document.getElementById('img_format').value;
-        var size = document.getElementById('sku_img_size').value;
-        var version = document.getElementById('sku_img_version').value;
-        var skuPath = (type === 'manual' && manualSkuVal !== "") ? manualSkuVal : "@SKU";
-        document.getElementById('preview_url_sku').innerText = "https://images.implementos.cl/img/" + size + skuPath + version + "." + format;
-
-        var l_v = document.getElementById('logo_v').value;
-        var l_p = document.getElementById('logo_p').value;
-        document.getElementById('preview_url_logo').innerText = "https://images.implementos.cl/marcas/h/logo_@MARCA" + l_v + l_p + ".png";
-    }
-
-    function updateSizes() {
-        var format = document.getElementById('img_format').value;
-        var sizeSelect = document.getElementById('sku_img_size');
-        var currVal = sizeSelect.value;
-        sizeSelect.innerHTML = "";
-        var options = (format === 'png') ? [['h/', 'h'], ['m/', 'm'], ['s/', 's']] : [['1000/', '1000'], ['600/', '600'], ['350/', '350']];
-        options.forEach(opt => {
-            var el = document.createElement("option"); el.value = opt[0]; el.innerText = opt[1];
-            sizeSelect.appendChild(el);
+        sdk.setContent(testCode, function() {
+            alert("Prueba enviada. Revisa el lienzo de Salesforce a la izquierda.");
         });
-        if (Array.from(sizeSelect.options).some(o => o.value === currVal)) { sizeSelect.value = currVal; }
     }
 
-    function loadLiveImage() {
-        var url = document.getElementById('preview_url_sku').innerText;
-        var container = document.getElementById('live_preview_container');
-        var img = document.getElementById('live_sku_img');
-        if (url.includes("@SKU")) { alert("Escriba un SKU manual primero"); return; }
-        container.style.display = "block";
-        img.src = url;
-    }
-
-    // FUNCIÓN QUE CONSTRUYE, GUARDA E INYECTA
+    // ==========================================
+    // FUNCIÓN REAL 
+    // ==========================================
     function syncToSalesforce() {
         var currentSlot = document.querySelector('input[name="sku_slot"]:checked');
+        var layoutPath = document.getElementById('master_layout').value.trim();
+
         var data = {
-            master_layout: document.getElementById('master_layout').value,
+            master_layout: layoutPath,
             data_source_type: document.getElementById('data_source_type').value,
             sku_slot: currentSlot ? currentSlot.value : 'SKU_1',
             manual_sku: document.getElementById('manual_sku').value.toUpperCase().trim(),
             img_format: document.getElementById('img_format').value,
             sku_img_size: document.getElementById('sku_img_size').value,
             sku_img_version: document.getElementById('sku_img_version').value,
-            logo_size: document.getElementById('logo_size').value,
-            sufijo1: document.getElementById('logo_v').value,
-            sufijo2: document.getElementById('logo_p').value,
-            pop_out_offset: document.getElementById('pop_out_offset').value,
-            logo_z_index: document.getElementById('logo_z').value
+            logo_size: "65", sufijo1: "-1", sufijo2: "_C", pop_out_offset: "55", logo_z_index: "15"
         };
 
         var code = "%%[\n";
@@ -235,56 +129,35 @@
         code += " SET @pop_out_offset = '" + data.pop_out_offset + "'\n";
         code += " SET @logo_z_index = '" + data.logo_z_index + "'\n";
         code += "]%%\n";
+        
+        code += "<div style='background:#111; color:#0f0; padding:10px; margin-bottom:10px; font-family:monospace; font-size:11px;'>";
+        code += "Llamando al bloque: " + data.master_layout + "</div>\n";
+        
         code += "%%=ContentBlockByName('" + data.master_layout + "')=%%";
 
-        // Muestra en caja negra
         var outBox = document.getElementById('output_code');
-        outBox.value = code;
-        outBox.style.display = 'block';
+        outBox.value = code; outBox.style.display = 'block';
 
-        // ENVÍO A SALESFORCE (Memoria y Lienzo)
         sdk.setData(data, function() {
-            sdk.setContent(code, function() {
-                var msg = document.getElementById('status_msg');
-                msg.style.display = 'block';
-                setTimeout(function(){ msg.style.display = 'none'; }, 3000);
-            });
+            sdk.setContent(code);
         });
     }
 
-    // ARRANQUE Y RECUPERACIÓN DE MEMORIA
-    window.onload = function() {
-        updateSizes();
-        
-        sdk.getData(function(data) {
-            // Si hay memoria guardada, rellenamos
-            if (data && Object.keys(data).length > 0) {
-                if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
-                if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
-                if(data.sku_slot) {
-                    var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]');
-                    if(r) r.checked = true;
-                }
-                if(data.manual_sku) document.getElementById('manual_sku').value = data.manual_sku;
-                if(data.img_format) {
-                    document.getElementById('img_format').value = data.img_format;
-                    updateSizes(); 
-                }
-                if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
-                if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
-                if(data.logo_size) document.getElementById('logo_size').value = data.logo_size;
-                if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
-                if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
-                if(data.pop_out_offset) document.getElementById('pop_out_offset').value = data.pop_out_offset;
-                if(data.logo_z_index) document.getElementById('logo_z').value = data.logo_z_index;
-            }
-            
-            updateUI();
-            
-            // RENDEREA INMEDIATAMENTE AL ARRASTRAR O ABRIR
-            syncToSalesforce();
+    function updateUI() {
+        var type = document.getElementById('data_source_type').value;
+        document.getElementById('manual_input_container').style.display = (type === 'manual') ? 'block' : 'none';
+    }
+    
+    function updateSizes() {
+        var format = document.getElementById('img_format').value;
+        var sizeSelect = document.getElementById('sku_img_size');
+        sizeSelect.innerHTML = "";
+        var options = (format === 'png') ? [['h/', 'h/']] : [['1000/', '1000/']];
+        options.forEach(function(opt) {
+            var el = document.createElement("option"); el.value = opt[0]; el.innerText = opt[1];
+            sizeSelect.appendChild(el);
         });
-    };
+    }
 </script>
 
 </body>
