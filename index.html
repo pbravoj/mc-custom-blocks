@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.12.0 - Tabs Interface</title>
+    <title>BPP Selector M10.13.0</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -11,60 +11,66 @@
         .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
         .container { padding: 20px; max-width: 680px; margin: auto; }
         
-        /* === SISTEMA DE TABS === */
-        .tabs-container { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; background: #fff; border-radius: 8px 8px 0 0; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+        .tabs-container { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; background: #fff; border-radius: 8px 8px 0 0; overflow: hidden; }
         .tab-btn { flex: 1; padding: 12px 5px; text-align: center; cursor: pointer; background: #f9f9f9; border: none; border-bottom: 3px solid transparent; font-weight: bold; font-size: 11px; color: #666; transition: 0.3s; text-transform: uppercase;}
         .tab-btn:hover { background: #f0f7ff; color: #0055aa; }
         .tab-btn.active { background: #fff; color: #0055aa; border-bottom-color: #0055aa; }
         
-        /* === CONTENIDO DE TABS === */
-        .tab-content { display: none; background: #ffffff; padding: 20px; border-radius: 0 0 8px 8px; border: 1px solid #d8dde6; border-top: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content { display: none; background: #ffffff; padding: 20px; border-radius: 0 0 8px 8px; border: 1px solid #d8dde6; border-top: none; }
+        .tab-content.active { display: block; }
 
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; border-bottom: 1px solid #eee; padding-bottom: 5px;}
-        select, input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-size: 14px; margin-bottom: 15px; box-sizing: border-box;}
+        select, input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; margin-bottom: 15px; box-sizing: border-box;}
         .flex-row { display: flex; gap: 15px; align-items: flex-start; margin-bottom: 5px; }
         .flex-col { flex: 1; }
         .slot-grid { display: flex; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 15px; }
-        .slot-grid label { font-size: 12px; margin-bottom: 0; font-weight: normal; color: #333; display: flex; align-items: center; border: none; padding: 0;}
-        .slot-grid input { margin-right: 4px; }
+        .slot-grid label { font-size: 12px; margin-bottom: 0; border: none; padding: 0;}
         .ver-badge { background: #0055aa; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; }
-        .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; border-top: 1px solid #d8dde6; padding-top: 15px; line-height: 1.8; }
-        .btn-validar { background: #0055aa; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; transition: 0.3s; }
-        .btn-validar:hover { background: #003366; }
-        .help-text { font-size: 10px; color: #888; margin-top: -10px; margin-bottom: 15px; display: block; }
+        .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; padding-top: 15px; }
+        .btn-validar { background: #0055aa; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #444;}
+        .checkbox-group input { width: auto; margin-right: 8px; margin-bottom: 0;}
     </style>
 </head>
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">Configurador BPP (M10.12.0)</h1>
+        <h1 class="header-title">Configurador BPP (M10.13.0)</h1>
     </div>
 
     <div class="container">
-        
         <div class="tabs-container">
             <button class="tab-btn active" onclick="openTab(event, 'tab-template')">1. Template</button>
             <button class="tab-btn" onclick="openTab(event, 'tab-sku')">2. SKU</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-imagen')">3. Foto Producto</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-logo')">4. Logo Marca</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-textos')">5. Precio / Desc.</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-imagen')">3. Foto</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-logo')">4. Logo</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-textos')">5. Textos</button>
         </div>
 
         <div id="tab-template" class="tab-content active">
             <label style="color: #0055aa;">Selección de Template Base</label>
-            <span class="help-text">Elige el diseño principal del bloque. Esta lista se alimenta de templates.txt.</span>
             <select id="master_layout" onchange="update()">
-                <option value="">Cargando templates...</option>
+                <option value="BPP_Layout_Claro">BPP Layout Claro</option>
+                <option value="BPP_Layout_Oscuro">BPP Layout Oscuro</option>
             </select>
+
+            <label style="color: #e11d48; margin-top: 15px;">Diagnóstico</label>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Panel Debug:</div>
+                    <select id="show_debug" onchange="update()">
+                        <option value="false" selected>Ocultar</option>
+                        <option value="true">Mostrar Panel</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div id="tab-sku" class="tab-content">
             <label style="color: #0055aa;">Origen de Datos y Posición</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Tipo de Origen:</div>
                     <select id="data_source_type" onchange="update()">
                         <option value="parametric" selected>Paramétrico</option>
                         <option value="recommended">Recomendado</option>
@@ -72,7 +78,6 @@
                     </select>
                 </div>
                 <div class="flex-col" style="flex: 1.5;">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Slot Destino:</div>
                     <div class="slot-grid">
                         <label><input type="radio" name="sku_slot" value="SKU_1" checked onchange="update()"> 1</label>
                         <label><input type="radio" name="sku_slot" value="SKU_2" onchange="update()"> 2</label>
@@ -83,169 +88,99 @@
                     </div>
                 </div>
             </div>
-
-            <div id="manual_input_container" style="display:none; background:#f0f7ff; padding:15px; border-radius:4px; border: 1px dashed #0055aa;">
-                <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#e11d48;">Ingresar SKU Manual:</div>
-                <div style="display: flex; gap: 5px;">
-                    <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="margin-bottom:0; text-transform:uppercase; font-weight:bold; flex: 2;" oninput="update()">
-                    <button type="button" class="btn-validar" style="flex: 1; margin-bottom:0;" onclick="loadLiveImage()">VER FOTO</button>
-                </div>
-                <div id="live_preview_container" style="display:none; text-align: center; margin-top: 10px;">
-                    <img id="live_sku_img" src="" style="max-height: 120px; border: 1px solid #ddd; padding: 5px; background: white;">
-                    <div id="img_status" style="font-size: 10px; color: #888;"></div>
-                </div>
+            <div id="manual_input_container" style="display:none; background:#f0f7ff; padding:15px; border-radius:4px;">
+                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="text-transform:uppercase; font-weight:bold;" oninput="update()">
             </div>
         </div>
 
         <div id="tab-imagen" class="tab-content">
-            <label style="color: #0055aa;">Librerías y Formato</label>
+            <label style="color: #0055aa;">Formato y Tamaño</label>
             <div class="flex-row">
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Formato:</div>
-                    <select id="img_format" onchange="updateSizesDropdown(); update();">
-                        <option value="png" selected>PNG (Transparente)</option>
-                        <option value="jpg">JPG (Con Fondo)</option>
-                    </select>
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Carpeta / Tamaño:</div>
-                    <select id="sku_img_size" onchange="update()"><option value="h/">h/</option></select>
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Versión:</div>
-                    <select id="sku_img_version" onchange="update()">
-                        <option value="-1" selected>-1</option><option value="-2">-2</option><option value="-3">-3</option>
-                    </select>
-                </div>
+                <select id="img_format" class="flex-col" onchange="updateSizesDropdown(); update();"><option value="png" selected>PNG</option><option value="jpg">JPG</option></select>
+                <select id="sku_img_size" class="flex-col" onchange="update()"><option value="h/">h/</option></select>
+                <select id="sku_img_version" class="flex-col" onchange="update()"><option value="-1" selected>-1</option><option value="-2">-2</option></select>
             </div>
-
-            <label style="color: #e11d48; margin-top: 15px;">Ajustes de Tamaño y Posición (Capa)</label>
+            <label style="color: #e11d48; margin-top: 15px;">Ubicación de Foto</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Ubicación:</div>
-                    <select id="sku_img_placement" onchange="update()">
-                        <option value="fuera" selected>Fuera (Pop-Out)</option>
-                        <option value="dentro">Dentro (Contenida)</option>
-                    </select>
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Desplazamiento (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Elevación/Offset (px):</div>
                     <input type="number" id="sku_img_offset_new" value="55" oninput="document.getElementById('pop_out_offset').value = this.value; update();">
                     <input type="hidden" id="pop_out_offset" value="55">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Ancho Foto (%):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho (%):</div>
                     <input type="number" id="sku_img_width" value="85" oninput="update()">
                 </div>
             </div>
         </div>
 
         <div id="tab-logo" class="tab-content">
-            <label style="color: #0055aa;">Configuración del Logo de la Marca</label>
+            <label style="color: #0055aa;">Configuración Logo</label>
             <div class="flex-row">
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Variante:</div>
-                    <select id="logo_v" onchange="update()"><option value="-1">V1</option><option value="-2">V2</option></select>
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Pantone:</div>
-                    <select id="logo_p" onchange="update()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Z-Index (Capa):</div>
-                    <select id="logo_z_index" onchange="update()">
-                        <option value="15">Frente a Foto</option>
-                        <option value="5">Detrás de Foto</option>
-                    </select>
-                </div>
+                <select id="logo_v" class="flex-col" onchange="update()"><option value="-1">V1</option><option value="-2">V2</option></select>
+                <select id="logo_p" class="flex-col" onchange="update()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
+                <select id="logo_z_index" class="flex-col" onchange="update()"><option value="15">Encima Foto</option><option value="5">Detrás Foto</option></select>
             </div>
-
-            <label style="color: #e11d48; margin-top: 15px;">Alineación Libre</label>
+            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Absoluto)</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Posición en Esquina:</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Esquina:</div>
                     <select id="logo_position" onchange="update()">
-                        <option value="SD">Superior Derecha</option>
-                        <option value="SI">Superior Izquierda</option>
-                        <option value="ID" selected>Inferior Derecha</option>
-                        <option value="II">Inferior Izquierda</option>
+                        <option value="SD">Sup. Derecha</option>
+                        <option value="SI">Sup. Izquierda</option>
+                        <option value="ID" selected>Inf. Derecha</option>
+                        <option value="II">Inf. Izquierda</option>
                     </select>
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Ancho Logo (%):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño (%):</div>
                     <input type="number" id="logo_size_percent" value="30" oninput="update()">
-                    <input type="hidden" id="logo_size" value="65"> </div>
+                </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#666;">Distancia (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Distancia (px):</div>
                     <input type="number" id="logo_distance" value="15" oninput="update()">
                 </div>
             </div>
         </div>
 
         <div id="tab-textos" class="tab-content">
-            <label style="color: #0055aa;">Precio y Descripciones</label>
-            <div style="background: #f9f9f9; border: 1px dashed #ccc; padding: 20px; text-align: center; border-radius: 8px; color: #888;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" style="margin-bottom: 10px;">
-                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg><br>
-                <strong>Sección en Desarrollo</strong><br>
-                <span style="font-size: 11px;">Aquí agregaremos los controles para cambiar los colores, tipografías y mostrar/ocultar descripciones en la próxima iteración.</span>
+            <label style="color: #0055aa;">Visibilidad de Textos</label>
+            <div class="checkbox-group"><input type="checkbox" id="show_name" checked onchange="update()"> Mostrar Nombre Producto</div>
+            <div class="checkbox-group"><input type="checkbox" id="show_desc1" checked onchange="update()"> Mostrar Descripción Línea 1</div>
+            <div class="checkbox-group"><input type="checkbox" id="show_desc2" checked onchange="update()"> Mostrar Descripción Línea 2</div>
+
+            <label style="color: #e11d48; margin-top: 20px;">Separaciones hacia Abajo (Evitar Traslapes)</label>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo Foto SKU (px):</div>
+                    <input type="number" id="space_below_sku" value="10" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo Título (px):</div>
+                    <input type="number" id="space_below_name" value="5" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo Desc. (px):</div>
+                    <input type="number" id="space_below_desc" value="10" oninput="update()">
+                </div>
             </div>
         </div>
 
         <div class="footer">
-            Implementos S.A. | UI Tabbed Engine<br>
-            <span class="ver-badge">Motor: M10.12.0-ESTABLE</span>
+            Implementos S.A. | M10.13.0
         </div>
     </div>
 
     <script>
         var sdk = new window.sfdc.BlockSDK();
 
-        // CONTROL DE PESTAÑAS (TABS)
         function openTab(evt, tabId) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-                tabcontent[i].classList.remove("active");
-            }
-            tablinks = document.getElementsByClassName("tab-btn");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].classList.remove("active");
-            }
+            var tabs = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabs.length; i++) tabs[i].style.display = "none";
+            var btns = document.getElementsByClassName("tab-btn");
+            for (var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
             document.getElementById(tabId).style.display = "block";
-            // Timeout pequeño para efecto fadeIn
-            setTimeout(function(){ document.getElementById(tabId).classList.add("active"); }, 10);
             evt.currentTarget.classList.add("active");
-        }
-
-        // CARGA DE TEMPLATES (TXT)
-        async function loadTemplates() {
-            var select = document.getElementById('master_layout');
-            try {
-                var response = await fetch('templates.txt?t=' + new Date().getTime());
-                if (response.ok) {
-                    var text = await response.text();
-                    var lines = text.split('\n');
-                    select.innerHTML = ''; 
-                    lines.forEach(function(line) {
-                        if (line.trim() !== '') {
-                            var parts = line.split('|');
-                            var val = parts[0].trim();
-                            var label = parts.length > 1 ? parts[1].trim() : val;
-                            var opt = document.createElement('option');
-                            opt.value = val; opt.innerText = label;
-                            select.appendChild(opt);
-                        }
-                    });
-                } else { throw new Error("No TXT"); }
-            } catch (error) {
-                select.innerHTML = '';
-                var opt = document.createElement('option');
-                opt.value = "BPP_Layout_Claro"; opt.innerText = "BPP Layout Claro (Fallback)";
-                select.appendChild(opt);
-            }
         }
 
         function updateSizesDropdown() {
@@ -258,31 +193,9 @@
                 var el = document.createElement("option"); el.value = opt[0]; el.innerText = opt[1];
                 sizeSelect.appendChild(el);
             });
-            if (Array.from(sizeSelect.options).some(function(o){ return o.value === currVal; })) {
-                sizeSelect.value = currVal;
-            }
+            if (Array.from(sizeSelect.options).some(o => o.value === currVal)) sizeSelect.value = currVal;
         }
 
-        function loadLiveImage() {
-            var manualSkuVal = document.getElementById('manual_sku').value.trim().toUpperCase();
-            var format = document.getElementById('img_format').value;
-            var size = document.getElementById('sku_img_size').value;
-            var version = document.getElementById('sku_img_version').value;
-
-            if (manualSkuVal === "") { alert("Escriba un SKU manual primero."); return; }
-
-            var url = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
-            var container = document.getElementById('live_preview_container');
-            var img = document.getElementById('live_sku_img');
-            var status = document.getElementById('img_status');
-
-            container.style.display = "block";
-            status.innerText = "Cargando..."; img.style.display = "none"; img.src = url;
-            img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
-            img.onerror = function() { status.innerText = "Error: Imagen no encontrada en la librería."; img.style.display = "none"; };
-        }
-
-        // MOTOR DE INYECCIÓN
         function update() {
             var lay = document.getElementById('master_layout').value;
             var dsType = document.getElementById('data_source_type').value;
@@ -292,19 +205,26 @@
             var format = document.getElementById('img_format').value;
             var size = document.getElementById('sku_img_size').value;
             var version = document.getElementById('sku_img_version').value;
-            var logoSize = document.getElementById('logo_size').value;
             var suf1 = document.getElementById('logo_v').value;
             var suf2 = document.getElementById('logo_p').value;
             var popOut = document.getElementById('pop_out_offset').value;
             var logoZ = document.getElementById('logo_z_index').value;
 
-            // Nuevas variables (Logo y SKU position)
-            var skuImgPlacement = document.getElementById('sku_img_placement').value;
+            // Variables de Pestaña 3 y 4
             var skuImgOffsetNew = document.getElementById('sku_img_offset_new').value;
             var skuImgWidth = document.getElementById('sku_img_width').value;
             var logoPos = document.getElementById('logo_position').value;
             var logoSizePct = document.getElementById('logo_size_percent').value;
             var logoDist = document.getElementById('logo_distance').value;
+            var showDebug = document.getElementById('show_debug').value;
+
+            // Variables de Pestaña 5 (Textos)
+            var showName = document.getElementById('show_name').checked ? "true" : "false";
+            var showDesc1 = document.getElementById('show_desc1').checked ? "true" : "false";
+            var showDesc2 = document.getElementById('show_desc2').checked ? "true" : "false";
+            var spaceSku = document.getElementById('space_below_sku').value;
+            var spaceName = document.getElementById('space_below_name').value;
+            var spaceDesc = document.getElementById('space_below_desc').value;
 
             document.getElementById('manual_input_container').style.display = (dsType === 'manual') ? 'block' : 'none';
 
@@ -315,17 +235,22 @@
                 " SET @img_format = '" + format + "'\n" +
                 " SET @sku_img_size = '" + size + "'\n" +
                 " SET @sku_img_version = '" + version + "'\n" +
-                " SET @logo_size = '" + logoSize + "'\n" +
                 " SET @sufijo1 = '" + suf1 + "'\n" +
                 " SET @sufijo2 = '" + suf2 + "'\n" +
                 " SET @pop_out_offset = '" + popOut + "'\n" +
                 " SET @logo_z_index = '" + logoZ + "'\n" +
-                " SET @sku_img_placement = '" + skuImgPlacement + "'\n" +
                 " SET @sku_img_offset_new = '" + skuImgOffsetNew + "'\n" +
                 " SET @sku_img_width = '" + skuImgWidth + "'\n" +
                 " SET @logo_position = '" + logoPos + "'\n" +
                 " SET @logo_size_percent = '" + logoSizePct + "'\n" +
                 " SET @logo_distance = '" + logoDist + "'\n" +
+                " SET @show_debug = '" + showDebug + "'\n" +
+                " SET @show_name = '" + showName + "'\n" +
+                " SET @show_desc1 = '" + showDesc1 + "'\n" +
+                " SET @show_desc2 = '" + showDesc2 + "'\n" +
+                " SET @space_below_sku = '" + spaceSku + "'\n" +
+                " SET @space_below_name = '" + spaceName + "'\n" +
+                " SET @space_below_desc = '" + spaceDesc + "'\n" +
                 "]%%\n";
 
             var render = "%%[ IF NOT Empty(@sku_slot) OR NOT Empty(@manual_sku) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
@@ -335,23 +260,18 @@
             var dataToSave = {
                 master_layout: lay, data_source_type: dsType, sku_slot: slot,
                 manual_sku: manualSku, img_format: format, sku_img_size: size,
-                sku_img_version: version, logo_size: logoSize, sufijo1: suf1,
+                sku_img_version: version, sufijo1: suf1,
                 sufijo2: suf2, pop_out_offset: popOut, logo_z_index: logoZ,
-                sku_img_placement: skuImgPlacement, sku_img_offset_new: skuImgOffsetNew, sku_img_width: skuImgWidth,
-                logo_position: logoPos, logo_size_percent: logoSizePct, logo_distance: logoDist
+                sku_img_offset_new: skuImgOffsetNew, sku_img_width: skuImgWidth,
+                logo_position: logoPos, logo_size_percent: logoSizePct, logo_distance: logoDist,
+                show_debug: showDebug, show_name: showName, show_desc1: showDesc1, show_desc2: showDesc2,
+                space_below_sku: spaceSku, space_below_name: spaceName, space_below_desc: spaceDesc
             };
-
             sdk.setData(dataToSave);
-            sdk.setAsset({
-                "name": "BPP_Selector_M10",
-                "metaData": { "thumbnail": { "url": "https://proveedores.implementos.cl/assets/img/implementos-logo.png" } }
-            });
         }
 
-        window.onload = async function() {
-            await loadTemplates();
+        window.onload = function() {
             updateSizesDropdown();
-
             sdk.getData(function(data) {
                 if (data && Object.keys(data).length > 0) {
                     if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
@@ -364,18 +284,24 @@
                     if(data.img_format) { document.getElementById('img_format').value = data.img_format; updateSizesDropdown(); }
                     if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
                     if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
-                    if(data.logo_size) document.getElementById('logo_size').value = data.logo_size;
                     if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
                     if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
                     if(data.pop_out_offset) document.getElementById('pop_out_offset').value = data.pop_out_offset;
                     if(data.logo_z_index) document.getElementById('logo_z_index').value = data.logo_z_index;
                     
-                    if(data.sku_img_placement) document.getElementById('sku_img_placement').value = data.sku_img_placement;
                     if(data.sku_img_offset_new) document.getElementById('sku_img_offset_new').value = data.sku_img_offset_new;
                     if(data.sku_img_width) document.getElementById('sku_img_width').value = data.sku_img_width;
                     if(data.logo_position) document.getElementById('logo_position').value = data.logo_position;
                     if(data.logo_size_percent) document.getElementById('logo_size_percent').value = data.logo_size_percent;
                     if(data.logo_distance) document.getElementById('logo_distance').value = data.logo_distance;
+                    if(data.show_debug) document.getElementById('show_debug').value = data.show_debug;
+                    
+                    if(data.show_name) document.getElementById('show_name').checked = (data.show_name === "true");
+                    if(data.show_desc1) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
+                    if(data.show_desc2) document.getElementById('show_desc2').checked = (data.show_desc2 === "true");
+                    if(data.space_below_sku) document.getElementById('space_below_sku').value = data.space_below_sku;
+                    if(data.space_below_name) document.getElementById('space_below_name').value = data.space_below_name;
+                    if(data.space_below_desc) document.getElementById('space_below_desc').value = data.space_below_desc;
                 }
                 update();
             });
