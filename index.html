@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.16.0 - Arquitectura Relativa</title>
+    <title>BPP Selector M10.18.0 - Geometría y Frame</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -11,8 +11,8 @@
         .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
         .container { padding: 20px; max-width: 680px; margin: auto; }
         
-        .tabs-container { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; background: #fff; border-radius: 8px 8px 0 0; overflow: hidden; }
-        .tab-btn { flex: 1; padding: 12px 5px; text-align: center; cursor: pointer; background: #f9f9f9; border: none; border-bottom: 3px solid transparent; font-weight: bold; font-size: 11px; color: #666; transition: 0.3s; text-transform: uppercase;}
+        .tabs-container { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; background: #fff; border-radius: 8px 8px 0 0; overflow: hidden; flex-wrap: wrap;}
+        .tab-btn { flex: 1; padding: 12px 5px; text-align: center; cursor: pointer; background: #f9f9f9; border: none; border-bottom: 3px solid transparent; font-weight: bold; font-size: 10px; color: #666; transition: 0.3s; text-transform: uppercase; min-width: 15%;}
         .tab-btn:hover { background: #f0f7ff; color: #0055aa; }
         .tab-btn.active { background: #fff; color: #0055aa; border-bottom-color: #0055aa; }
         
@@ -20,13 +20,15 @@
         .tab-content.active { display: block; }
 
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; border-bottom: 1px solid #eee; padding-bottom: 5px;}
-        select, input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; margin-bottom: 15px; box-sizing: border-box;}
+        select, input[type="text"], input[type="number"], input[type="color"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; margin-bottom: 15px; box-sizing: border-box;}
+        input[type="color"] { padding: 2px; height: 40px; cursor: pointer; }
         .flex-row { display: flex; gap: 15px; align-items: flex-start; margin-bottom: 5px; }
         .flex-col { flex: 1; }
         .slot-grid { display: flex; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 15px; }
         .slot-grid label { font-size: 12px; margin-bottom: 0; border: none; padding: 0;}
         .ver-badge { background: #0055aa; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; }
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; padding-top: 15px; }
+        .btn-validar { background: #0055aa; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
         
         .checkbox-group { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #444; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee;}
         .checkbox-group input { width: auto; margin-right: 8px; margin-bottom: 0;}
@@ -35,16 +37,17 @@
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">Configurador BPP (M10.16.0)</h1>
+        <h1 class="header-title">Configurador BPP (M10.18.0)</h1>
     </div>
 
     <div class="container">
         <div class="tabs-container">
             <button class="tab-btn active" onclick="openTab(event, 'tab-template')">1. Template</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-sku')">2. SKU</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-sku')">2. Origen/Librería</button>
             <button class="tab-btn" onclick="openTab(event, 'tab-imagen')">3. Foto</button>
             <button class="tab-btn" onclick="openTab(event, 'tab-logo')">4. Logo</button>
             <button class="tab-btn" onclick="openTab(event, 'tab-textos')">5. Textos</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-frame')">6. Frame Gris</button>
         </div>
 
         <div id="tab-template" class="tab-content active">
@@ -52,7 +55,6 @@
             <select id="master_layout" onchange="update()">
                 <option value="">Cargando templates...</option>
             </select>
-
             <label style="color: #e11d48; margin-top: 15px;">Diagnóstico</label>
             <div class="checkbox-group" style="border-color: #e11d48; background: #fff5f5;">
                 <input type="checkbox" id="show_debug" onchange="update()"> 
@@ -65,7 +67,7 @@
             <div class="flex-row">
                 <div class="flex-col">
                     <select id="data_source_type" onchange="update()">
-                        <option value="parametric" selected>Paramétrico</option>
+                        <option value="parametric" selected>Paramétrico (DE)</option>
                         <option value="recommended">Recomendado</option>
                         <option value="manual">Manual</option>
                     </select>
@@ -81,30 +83,48 @@
                     </div>
                 </div>
             </div>
-            <div id="manual_input_container" style="display:none; background:#f0f7ff; padding:15px; border-radius:4px;">
-                <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="text-transform:uppercase; font-weight:bold;" oninput="update()">
-            </div>
-        </div>
-
-        <div id="tab-imagen" class="tab-content">
-            <label style="color: #0055aa;">Formato y Tamaño</label>
+            
+            <label style="color: #0055aa; margin-top:10px;">Librerías y Formato</label>
             <div class="flex-row">
                 <select id="img_format" class="flex-col" onchange="updateSizesDropdown(); update();"><option value="png" selected>PNG</option><option value="jpg">JPG</option></select>
                 <select id="sku_img_size" class="flex-col" onchange="update()"><option value="h/">h/</option></select>
                 <select id="sku_img_version" class="flex-col" onchange="update()"><option value="-1" selected>-1</option><option value="-2">-2</option></select>
             </div>
-            <label style="color: #e11d48; margin-top: 15px;">Ubicación de la Foto respecto a la FICHA</label>
+
+            <div id="manual_input_container" style="display:none; background:#f0f7ff; padding:15px; border-radius:4px; margin-top:15px;">
+                <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#e11d48;">SKU Manual Exacto:</div>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="manual_sku" placeholder="EJ: WUXACC0002" style="text-transform:uppercase; font-weight:bold; margin-bottom:0; flex:2;" oninput="update()">
+                    <button type="button" class="btn-validar" style="flex: 1; margin-bottom:0;" onclick="loadLiveImage()">VER FOTO</button>
+                </div>
+                <div id="live_preview_container" style="display:none; text-align: center; margin-top: 10px;">
+                    <img id="live_sku_img" src="" style="max-height: 120px; border: 1px solid #ddd; padding: 5px; background: white;">
+                    <div id="img_status" style="font-size: 10px; color: #888;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-imagen" class="tab-content">
+            <label style="color: #0055aa;">Geometría de la Foto respecto al Frame</label>
+            <div style="background:#fefefe; border:1px solid #ddd; padding:10px; border-radius:4px; margin-bottom:15px; font-size:11px; color:#666;">
+                <strong>Regla de Oro:</strong> El Frame Gris comienza en 0px (Arriba). La Tarjeta debe estar más abajo que la Foto para crear el efecto "Salido".
+            </div>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Elevación (px):</div>
-                    <input type="number" id="sku_img_offset_new" value="55" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#0055aa;">[A] Distancia a Tarjeta (px):</div>
+                    <input type="number" id="frame_to_card" value="40" oninput="update()" title="Distancia desde arriba hasta donde empieza la Ficha de color">
                 </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#e11d48;">[B] Distancia a Foto (px):</div>
+                    <input type="number" id="frame_to_photo" value="10" oninput="update()" title="Distancia desde arriba hasta la punta de la Foto">
+                </div>
+            </div>
+            <div class="flex-row">
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Ancho Foto (%):</div>
                     <input type="number" id="sku_img_width" value="85" oninput="update()">
                 </div>
             </div>
-            <div style="font-size:10px; color:#888;">El Frame gris siempre crecerá para evitar que la foto se salga del cuadro exterior.</div>
         </div>
 
         <div id="tab-logo" class="tab-content">
@@ -114,10 +134,10 @@
                 <select id="logo_p" class="flex-col" onchange="update()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
                 <select id="logo_z_index" class="flex-col" onchange="update()"><option value="15">Encima Foto</option><option value="5">Detrás Foto</option></select>
             </div>
-            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Relativo a la FOTO del producto)</label>
+            <label style="color: #e11d48; margin-top: 15px;">Posición Logo (Relativo a la FOTO)</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Esquina de la Foto:</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Esquina:</div>
                     <select id="logo_position" onchange="update()">
                         <option value="SD">Sup. Derecha</option>
                         <option value="SI">Sup. Izquierda</option>
@@ -126,7 +146,7 @@
                     </select>
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño Logo (%):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño (%):</div>
                     <input type="number" id="logo_size_percent" value="30" oninput="update()">
                 </div>
                 <div class="flex-col">
@@ -137,30 +157,60 @@
         </div>
 
         <div id="tab-textos" class="tab-content">
-            <label style="color: #0055aa;">Visibilidad de Textos</label>
-            <div class="checkbox-group"><input type="checkbox" id="show_name" checked onchange="update()"> Mostrar Nombre Producto (@NOMBRE)</div>
-            <div class="checkbox-group"><input type="checkbox" id="show_desc1" checked onchange="update()"> Mostrar Desc. Línea 1 (@DESCRIP_L1)</div>
-            <div class="checkbox-group"><input type="checkbox" id="show_desc2" checked onchange="update()"> Mostrar Desc. Línea 2 (@DESCRIP_L2)</div>
-
-            <label style="color: #e11d48; margin-top: 20px;">Deltas de Separación (Márgenes)</label>
+            <label style="color: #0055aa;">Jerarquía: Código SKU</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Delta debajo de la Foto:</div>
-                    <input type="number" id="space_photo_to_sku" value="10" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">[A] Debajo Foto (px):</div>
+                    <input type="number" id="sku_code_mt" value="10" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Delta debajo de SKU:</div>
-                    <input type="number" id="space_sku_to_name" value="5" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">[B] Borde Derecho (px):</div>
+                    <input type="number" id="sku_code_mr" value="20" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Delta debajo de Nombre:</div>
-                    <input type="number" id="space_name_to_desc" value="8" oninput="update()">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño Letra (px):</div>
+                    <input type="number" id="sku_code_fs" value="10" oninput="update()">
+                </div>
+            </div>
+
+            <label style="color: #0055aa; margin-top: 15px;">Jerarquía: Nombre del Producto</label>
+            <div class="checkbox-group"><input type="checkbox" id="show_name" checked onchange="update()"> Mostrar @NOMBRE</div>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">[A] Debajo del SKU (px):</div>
+                    <input type="number" id="sku_name_mt" value="5" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño Letra (px):</div>
+                    <input type="number" id="sku_name_fs" value="15" oninput="update()">
+                </div>
+            </div>
+
+            <label style="color: #0055aa; margin-top: 15px;">Descripciones</label>
+            <div class="checkbox-group"><input type="checkbox" id="show_desc1" checked onchange="update()"> Mostrar Línea 1 (@DESCRIP_L1)</div>
+            <div class="checkbox-group"><input type="checkbox" id="show_desc2" checked onchange="update()"> Mostrar Línea 2 (@DESCRIP_L2)</div>
+        </div>
+
+        <div id="tab-frame" class="tab-content">
+            <label style="color: #0055aa;">Configuración del Lienzo (Frame)</label>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho Fijo (px):</div>
+                    <input type="number" id="frame_width" value="340" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Alto Mínimo (px):</div>
+                    <input type="number" id="frame_min_height" value="400" oninput="update()" title="No cortará los textos, pero mantendrá la tarjeta estructurada">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Color Fondo (Hex):</div>
+                    <input type="color" id="frame_bg_color" value="#F4F6F9" oninput="update()">
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            Implementos S.A. | M10.16.0 (Dom Flow Architecture)
+            Implementos S.A. | M10.18.0 (Física AB + Outlook Fix)
         </div>
     </div>
 
@@ -211,12 +261,29 @@
             if (Array.from(sizeSelect.options).some(o => o.value === currVal)) sizeSelect.value = currVal;
         }
 
+        function loadLiveImage() {
+            var manualSkuVal = document.getElementById('manual_sku').value.trim().toUpperCase();
+            var format = document.getElementById('img_format').value;
+            var size = document.getElementById('sku_img_size').value;
+            var version = document.getElementById('sku_img_version').value;
+            if (manualSkuVal === "") { alert("Escriba un SKU manual primero."); return; }
+            var url = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
+            var container = document.getElementById('live_preview_container');
+            var img = document.getElementById('live_sku_img');
+            var status = document.getElementById('img_status');
+            container.style.display = "block";
+            status.innerText = "Cargando..."; img.style.display = "none"; img.src = url;
+            img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
+            img.onerror = function() { status.innerText = "Error: Imagen no encontrada."; img.style.display = "none"; };
+        }
+
         function update() {
             var lay = document.getElementById('master_layout').value;
             var dsType = document.getElementById('data_source_type').value;
             var slotNode = document.querySelector('input[name="sku_slot"]:checked');
             var slot = slotNode ? slotNode.value : 'SKU_1';
             var manualSku = document.getElementById('manual_sku').value.toUpperCase().trim();
+            
             var format = document.getElementById('img_format').value;
             var size = document.getElementById('sku_img_size').value;
             var version = document.getElementById('sku_img_version').value;
@@ -224,8 +291,10 @@
             var suf2 = document.getElementById('logo_p').value;
             var logoZ = document.getElementById('logo_z_index').value;
 
-            var skuImgOffsetNew = document.getElementById('sku_img_offset_new').value;
+            var fToCard = document.getElementById('frame_to_card').value;
+            var fToPhoto = document.getElementById('frame_to_photo').value;
             var skuImgWidth = document.getElementById('sku_img_width').value;
+            
             var logoPos = document.getElementById('logo_position').value;
             var logoSizePct = document.getElementById('logo_size_percent').value;
             var logoDist = document.getElementById('logo_distance').value;
@@ -235,9 +304,16 @@
             var showDesc1 = document.getElementById('show_desc1').checked ? "true" : "false";
             var showDesc2 = document.getElementById('show_desc2').checked ? "true" : "false";
             
-            var spacePhotoSku = document.getElementById('space_photo_to_sku').value;
-            var spaceSkuName = document.getElementById('space_sku_to_name').value;
-            var spaceNameDesc = document.getElementById('space_name_to_desc').value;
+            var skuCodeMt = document.getElementById('sku_code_mt').value;
+            var skuCodeMr = document.getElementById('sku_code_mr').value;
+            var skuCodeFs = document.getElementById('sku_code_fs').value;
+            
+            var skuNameMt = document.getElementById('sku_name_mt').value;
+            var skuNameFs = document.getElementById('sku_name_fs').value;
+            
+            var frameW = document.getElementById('frame_width').value;
+            var frameH = document.getElementById('frame_min_height').value;
+            var frameBg = document.getElementById('frame_bg_color').value;
 
             document.getElementById('manual_input_container').style.display = (dsType === 'manual') ? 'block' : 'none';
 
@@ -251,7 +327,8 @@
                 " SET @sufijo1 = '" + suf1 + "'\n" +
                 " SET @sufijo2 = '" + suf2 + "'\n" +
                 " SET @logo_z_index = '" + logoZ + "'\n" +
-                " SET @sku_img_offset_new = '" + skuImgOffsetNew + "'\n" +
+                " SET @frame_to_card = '" + fToCard + "'\n" +
+                " SET @frame_to_photo = '" + fToPhoto + "'\n" +
                 " SET @sku_img_width = '" + skuImgWidth + "'\n" +
                 " SET @logo_position = '" + logoPos + "'\n" +
                 " SET @logo_size_percent = '" + logoSizePct + "'\n" +
@@ -260,9 +337,14 @@
                 " SET @show_name = '" + showName + "'\n" +
                 " SET @show_desc1 = '" + showDesc1 + "'\n" +
                 " SET @show_desc2 = '" + showDesc2 + "'\n" +
-                " SET @space_photo_to_sku = '" + spacePhotoSku + "'\n" +
-                " SET @space_sku_to_name = '" + spaceSkuName + "'\n" +
-                " SET @space_name_to_desc = '" + spaceNameDesc + "'\n" +
+                " SET @sku_code_mt = '" + skuCodeMt + "'\n" +
+                " SET @sku_code_mr = '" + skuCodeMr + "'\n" +
+                " SET @sku_code_fs = '" + skuCodeFs + "'\n" +
+                " SET @sku_name_mt = '" + skuNameMt + "'\n" +
+                " SET @sku_name_fs = '" + skuNameFs + "'\n" +
+                " SET @frame_width = '" + frameW + "'\n" +
+                " SET @frame_min_height = '" + frameH + "'\n" +
+                " SET @frame_bg_color = '" + frameBg + "'\n" +
                 "]%%\n";
 
             var render = "%%[ IF NOT Empty(@sku_slot) OR NOT Empty(@manual_sku) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
@@ -270,13 +352,15 @@
             sdk.setContent(logic + render);
             
             var dataToSave = {
-                master_layout: lay, data_source_type: dsType, sku_slot: slot,
-                manual_sku: manualSku, img_format: format, sku_img_size: size,
-                sku_img_version: version, sufijo1: suf1, sufijo2: suf2, logo_z_index: logoZ,
-                sku_img_offset_new: skuImgOffsetNew, sku_img_width: skuImgWidth,
+                master_layout: lay, data_source_type: dsType, sku_slot: slot, manual_sku: manualSku, 
+                img_format: format, sku_img_size: size, sku_img_version: version, 
+                sufijo1: suf1, sufijo2: suf2, logo_z_index: logoZ,
+                frame_to_card: fToCard, frame_to_photo: fToPhoto, sku_img_width: skuImgWidth,
                 logo_position: logoPos, logo_size_percent: logoSizePct, logo_distance: logoDist,
                 show_debug: showDebug, show_name: showName, show_desc1: showDesc1, show_desc2: showDesc2,
-                space_photo_to_sku: spacePhotoSku, space_sku_to_name: spaceSkuName, space_name_to_desc: spaceNameDesc
+                sku_code_mt: skuCodeMt, sku_code_mr: skuCodeMr, sku_code_fs: skuCodeFs,
+                sku_name_mt: skuNameMt, sku_name_fs: skuNameFs,
+                frame_width: frameW, frame_min_height: frameH, frame_bg_color: frameBg
             };
             sdk.setData(dataToSave);
         }
@@ -288,10 +372,7 @@
                 if (data && Object.keys(data).length > 0) {
                     if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
                     if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
-                    if(data.sku_slot) {
-                        var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]');
-                        if(r) r.checked = true;
-                    }
+                    if(data.sku_slot) { var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]'); if(r) r.checked = true; }
                     if(data.manual_sku) document.getElementById('manual_sku').value = data.manual_sku;
                     if(data.img_format) { document.getElementById('img_format').value = data.img_format; updateSizesDropdown(); }
                     if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
@@ -300,7 +381,8 @@
                     if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
                     if(data.logo_z_index) document.getElementById('logo_z_index').value = data.logo_z_index;
                     
-                    if(data.sku_img_offset_new) document.getElementById('sku_img_offset_new').value = data.sku_img_offset_new;
+                    if(data.frame_to_card) document.getElementById('frame_to_card').value = data.frame_to_card;
+                    if(data.frame_to_photo) document.getElementById('frame_to_photo').value = data.frame_to_photo;
                     if(data.sku_img_width) document.getElementById('sku_img_width').value = data.sku_img_width;
                     if(data.logo_position) document.getElementById('logo_position').value = data.logo_position;
                     if(data.logo_size_percent) document.getElementById('logo_size_percent').value = data.logo_size_percent;
@@ -311,9 +393,14 @@
                     if(data.show_desc1 !== undefined) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
                     if(data.show_desc2 !== undefined) document.getElementById('show_desc2').checked = (data.show_desc2 === "true");
                     
-                    if(data.space_photo_to_sku) document.getElementById('space_photo_to_sku').value = data.space_photo_to_sku;
-                    if(data.space_sku_to_name) document.getElementById('space_sku_to_name').value = data.space_sku_to_name;
-                    if(data.space_name_to_desc) document.getElementById('space_name_to_desc').value = data.space_name_to_desc;
+                    if(data.sku_code_mt) document.getElementById('sku_code_mt').value = data.sku_code_mt;
+                    if(data.sku_code_mr) document.getElementById('sku_code_mr').value = data.sku_code_mr;
+                    if(data.sku_code_fs) document.getElementById('sku_code_fs').value = data.sku_code_fs;
+                    if(data.sku_name_mt) document.getElementById('sku_name_mt').value = data.sku_name_mt;
+                    if(data.sku_name_fs) document.getElementById('sku_name_fs').value = data.sku_name_fs;
+                    if(data.frame_width) document.getElementById('frame_width').value = data.frame_width;
+                    if(data.frame_min_height) document.getElementById('frame_min_height').value = data.frame_min_height;
+                    if(data.frame_bg_color) document.getElementById('frame_bg_color').value = data.frame_bg_color;
                 }
                 update();
             });
