@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.21.0 - Coordenadas X/Y</title>
+    <title>BPP Selector M10.24.0 - Strict Constraints</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -10,15 +10,12 @@
         .logo { height: 35px; margin-right: 15px; }
         .header-title { font-size: 16px; font-weight: bold; color: #0055aa; margin: 0; }
         .container { padding: 20px; max-width: 680px; margin: auto; }
-        
         .tabs-container { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; background: #fff; border-radius: 8px 8px 0 0; overflow: hidden; flex-wrap: wrap;}
         .tab-btn { flex: 1; padding: 12px 5px; text-align: center; cursor: pointer; background: #f9f9f9; border: none; border-bottom: 3px solid transparent; font-weight: bold; font-size: 10px; color: #666; transition: 0.3s; text-transform: uppercase; min-width: 15%;}
         .tab-btn:hover { background: #f0f7ff; color: #0055aa; }
         .tab-btn.active { background: #fff; color: #0055aa; border-bottom-color: #0055aa; }
-        
         .tab-content { display: none; background: #ffffff; padding: 20px; border-radius: 0 0 8px 8px; border: 1px solid #d8dde6; border-top: none; }
         .tab-content.active { display: block; }
-
         label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 13px; color: #3e3e3c; border-bottom: 1px solid #eee; padding-bottom: 5px;}
         select, input[type="text"], input[type="number"], input[type="color"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; margin-bottom: 15px; box-sizing: border-box;}
         input[type="color"] { padding: 2px; height: 40px; cursor: pointer; }
@@ -29,7 +26,6 @@
         .ver-badge { background: #0055aa; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; }
         .footer { text-align: center; font-size: 11px; color: #706e6b; margin-top: 20px; padding-top: 15px; }
         .btn-validar { background: #0055aa; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
-        
         .checkbox-group { display: flex; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: bold; color: #444; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee;}
         .checkbox-group input { width: auto; margin-right: 8px; margin-bottom: 0;}
     </style>
@@ -37,17 +33,17 @@
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">Configurador BPP (M10.21.0)</h1>
+        <h1 class="header-title">Configurador BPP (M10.24.0)</h1>
     </div>
 
     <div class="container">
         <div class="tabs-container">
             <button class="tab-btn active" onclick="openTab(event, 'tab-template')">1. Template</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-sku')">2. Origen/Librería</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-imagen')">3. Foto</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-logo')">4. Logo</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-sku')">2. Origen/Lib</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-imagen')">3. Elevación</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-logo')">4. Logo (X/Y)</button>
             <button class="tab-btn" onclick="openTab(event, 'tab-textos')">5. Textos</button>
-            <button class="tab-btn" onclick="openTab(event, 'tab-frame')">6. Tallas Fijas</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab-frame')">6. Estructura</button>
         </div>
 
         <div id="tab-template" class="tab-content active">
@@ -56,10 +52,10 @@
                 <option value="BPP_Layout_Claro">BPP Layout Claro</option>
                 <option value="BPP_Layout_Oscuro">BPP Layout Oscuro</option>
             </select>
-            <label style="color: #e11d48; margin-top: 15px;">Diagnóstico</label>
+            <label style="color: #e11d48; margin-top: 15px;">Diagnóstico y Ajustes Generales</label>
             <div class="checkbox-group" style="border-color: #e11d48; background: #fff5f5;">
                 <input type="checkbox" id="show_debug" onchange="update()"> 
-                <span style="color: #e11d48;">Mostrar Panel Debug en Salesforce (Ocultar para producción)</span>
+                <span style="color: #e11d48;">Mostrar Panel Debug en Salesforce (Ocultar para Producción)</span>
             </div>
         </div>
 
@@ -103,44 +99,46 @@
                     <div id="img_status" style="font-size: 10px; color: #888;"></div>
                 </div>
             </div>
+
+            <div id="parametric_input_container" style="display:block; background:#f0f7ff; padding:15px; border-radius:4px; margin-top:15px;">
+                <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#0055aa;">Campaña Paramétrica (Opcional):</div>
+                <input type="text" id="campaign_id_input" placeholder="Ej: SKU_PARAMETRICOS" style="text-transform:uppercase; font-weight:bold; margin-bottom: 0;" oninput="update()">
+            </div>
         </div>
 
         <div id="tab-imagen" class="tab-content">
-            <label style="color: #0055aa;">Física de la Foto</label>
-            <div class="flex-row">
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#0055aa;">[A] Dist. a Tarjeta (px):</div>
-                    <input type="number" id="frame_to_card" value="40" oninput="update()">
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#e11d48;">[B] Dist. a Foto (px):</div>
-                    <input type="number" id="frame_to_photo" value="10" oninput="update()">
-                </div>
+            <label style="color: #0055aa;">Elevación Vertical (Pop-Out)</label>
+            <div style="background:#fefefe; border:1px solid #ddd; padding:10px; border-radius:4px; margin-bottom:15px; font-size:11px; color:#666;">
+                <strong>Regla de Oro:</strong> [A] es el espacio desde el techo del gris hasta la Tarjeta. [B] es el espacio hasta la Foto.
             </div>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#e11d48;">Alto Fijo de Foto (px):</div>
-                    <input type="number" id="sku_img_height" value="200" oninput="update()" title="Fija la altura. Protege contra aspect ratios variables de los PNG.">
+                    <div style="font-size:11px; font-weight:bold; color:#0055aa;">[A] Dist. Frame a Tarjeta (px):</div>
+                    <input type="number" id="frame_to_card" value="40" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#e11d48;">[B] Dist. Frame a Foto (px):</div>
+                    <input type="number" id="frame_to_photo" value="10" oninput="update()">
                 </div>
             </div>
         </div>
 
         <div id="tab-logo" class="tab-content">
-            <label style="color: #0055aa;">Logo y Capas</label>
+            <label style="color: #0055aa;">Configuración Logo</label>
             <div class="flex-row">
                 <select id="logo_v" class="flex-col" onchange="update()"><option value="-1">V1</option><option value="-2">V2</option></select>
                 <select id="logo_p" class="flex-col" onchange="update()"><option value="_C">Color</option><option value="_B">Blanco</option></select>
-                <select id="logo_z_index" class="flex-col" onchange="update()"><option value="25">Frente (Z=25)</option><option value="5">Detrás (Z=5)</option></select>
+                <select id="logo_z_index" class="flex-col" onchange="update()"><option value="25">Z=25 (Al Frente)</option></select>
             </div>
-            <label style="color: #e11d48; margin-top: 15px;">Posición Absoluta (Coordenadas X/Y desde el Frame)</label>
+            <label style="color: #e11d48; margin-top: 15px;">Posición ABSOLUTA (Esquina Sup. Izq del Frame Gris)</label>
             <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">[X] Píxeles desde Izquierda:</div>
+                    <input type="number" id="logo_x" value="220" oninput="update()">
+                </div>
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">[Y] Píxeles desde Arriba:</div>
                     <input type="number" id="logo_y" value="15" oninput="update()">
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">[X] Píxeles desde Izq:</div>
-                    <input type="number" id="logo_x" value="220" oninput="update()">
                 </div>
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Tamaño Logo (%):</div>
@@ -150,14 +148,14 @@
         </div>
 
         <div id="tab-textos" class="tab-content">
-            <label style="color: #0055aa;">Alineación Código SKU</label>
+            <label style="color: #0055aa;">Alineación Código SKU (Izquierda)</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">[A] Debajo Foto (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo de Foto (px):</div>
                     <input type="number" id="sku_code_mt" value="10" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">[B] Margen Izq (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#e11d48;">Margen Izquierdo (px):</div>
                     <input type="number" id="sku_code_ml" value="0" oninput="update()">
                 </div>
                 <div class="flex-col">
@@ -170,7 +168,7 @@
             <div class="checkbox-group"><input type="checkbox" id="show_name" checked onchange="update()"> Mostrar @NOMBRE</div>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">[A] Debajo del SKU (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Debajo del SKU (px):</div>
                     <input type="number" id="sku_name_mt" value="5" oninput="update()">
                 </div>
                 <div class="flex-col">
@@ -185,26 +183,47 @@
         </div>
 
         <div id="tab-frame" class="tab-content">
-            <label style="color: #0055aa;">Tamaños Fijos (Protección de Aspect Ratio)</label>
+            <label style="color: #0055aa;">Dimensiones del Bloque y Colores</label>
             <div class="flex-row">
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Alto Fijo Tarjeta (px):</div>
-                    <input type="number" id="card_height" value="480" oninput="update()">
-                </div>
-                <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho Fijo Frame (px):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Ancho Frame (px):</div>
                     <input type="number" id="frame_width" value="340" oninput="update()">
                 </div>
                 <div class="flex-col">
-                    <div style="font-size:11px; font-weight:bold; color:#666;">Color Fondo (Hex):</div>
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Fondo Frame (Hex):</div>
                     <input type="color" id="frame_bg_color" value="#F4F6F9" oninput="update()">
                 </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Fondo Tarjeta (Hex):</div>
+                    <input type="color" id="card_bg_color" value="#8EA3B4" oninput="update()">
+                </div>
             </div>
-            <div style="font-size:10px; color:#888;">El "Alto Fijo Tarjeta" fuerza la estructura principal. La foto se ajustará dentro de su propio "Alto Fijo Foto" (Ver Tab 3).</div>
+
+            <label style="color: #e11d48; margin-top: 15px;">Control de Aspect Ratio (Regla del 60%)</label>
+            <div style="background:#fefefe; border:1px solid #ddd; padding:10px; border-radius:4px; margin-bottom:15px; font-size:11px; color:#666;">
+                La altura de la foto se calculará automáticamente como un % de la altura de la tarjeta para evitar que las fotos verticales (PNGs) rompan el diseño en Android o Outlook.
+            </div>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#0055aa;">Alto Fijo Tarjeta (px):</div>
+                    <input type="number" id="card_height" value="480" oninput="update()">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#e11d48;">% de Alto para Foto:</div>
+                    <input type="number" id="img_height_percent" value="60" oninput="update()" title="Si pones 60, la foto usará el 60% de los pixeles de la tarjeta.">
+                </div>
+                <div class="flex-col">
+                    <div style="font-size:11px; font-weight:bold; color:#666;">Margen Inferior Gris (px):</div>
+                    <input type="number" id="frame_pb" value="20" oninput="update()">
+                </div>
+            </div>
+            <div style="font-size:11px; color:#0055aa; margin-top: 5px; font-weight: bold;">
+                Altura forzada para la Foto: <span id="calc_img_height_display">288</span>px
+            </div>
         </div>
 
         <div class="footer">
-            Implementos S.A. | M10.21.0 (X/Y Coordinates)
+            Implementos S.A. | M10.24.0 (Calculadora Aspect Ratio)
         </div>
     </div>
 
@@ -254,6 +273,7 @@
             var slotNode = document.querySelector('input[name="sku_slot"]:checked');
             var slot = slotNode ? slotNode.value : 'SKU_1';
             var manualSku = document.getElementById('manual_sku').value.toUpperCase().trim();
+            var manualCampId = document.getElementById('campaign_id_input').value.toUpperCase().trim();
             
             var format = document.getElementById('img_format').value;
             var size = document.getElementById('sku_img_size').value;
@@ -264,7 +284,17 @@
 
             var fToCard = document.getElementById('frame_to_card').value;
             var fToPhoto = document.getElementById('frame_to_photo').value;
-            var skuImgHeight = document.getElementById('sku_img_height').value;
+            
+            var frameW = document.getElementById('frame_width').value;
+            var frameBg = document.getElementById('frame_bg_color').value;
+            var cardBg = document.getElementById('card_bg_color').value;
+            var cardH = document.getElementById('card_height').value;
+            var framePb = document.getElementById('frame_pb').value;
+            
+            // Matemática del 60%
+            var imgHeightPercent = document.getElementById('img_height_percent').value;
+            var calcImgHeight = Math.round(parseInt(cardH) * (parseInt(imgHeightPercent) / 100));
+            document.getElementById('calc_img_height_display').innerText = calcImgHeight;
             
             var logoX = document.getElementById('logo_x').value;
             var logoY = document.getElementById('logo_y').value;
@@ -278,20 +308,17 @@
             var skuCodeMt = document.getElementById('sku_code_mt').value;
             var skuCodeMl = document.getElementById('sku_code_ml').value;
             var skuCodeFs = document.getElementById('sku_code_fs').value;
-            
             var skuNameMt = document.getElementById('sku_name_mt').value;
             var skuNameFs = document.getElementById('sku_name_fs').value;
-            
-            var frameW = document.getElementById('frame_width').value;
-            var cardH = document.getElementById('card_height').value;
-            var frameBg = document.getElementById('frame_bg_color').value;
 
             document.getElementById('manual_input_container').style.display = (dsType === 'manual') ? 'block' : 'none';
+            document.getElementById('parametric_input_container').style.display = (dsType === 'parametric') ? 'block' : 'none';
 
             var logic = "%%[\n" +
                 " SET @data_source_type = '" + dsType + "'\n" +
                 " SET @sku_slot = '" + slot + "'\n" +
                 " SET @manual_sku = '" + manualSku + "'\n" +
+                " SET @manual_camp_id = '" + manualCampId + "'\n" +
                 " SET @img_format = '" + format + "'\n" +
                 " SET @sku_img_size = '" + size + "'\n" +
                 " SET @sku_img_version = '" + version + "'\n" +
@@ -300,7 +327,12 @@
                 " SET @logo_z_index = '" + logoZ + "'\n" +
                 " SET @frame_to_card = '" + fToCard + "'\n" +
                 " SET @frame_to_photo = '" + fToPhoto + "'\n" +
-                " SET @sku_img_height = '" + skuImgHeight + "'\n" +
+                " SET @sku_img_height = '" + calcImgHeight + "'\n" +
+                " SET @frame_width = '" + frameW + "'\n" +
+                " SET @frame_bg_color = '" + frameBg + "'\n" +
+                " SET @card_bg_color = '" + cardBg + "'\n" +
+                " SET @card_height = '" + cardH + "'\n" +
+                " SET @frame_pb = '" + framePb + "'\n" +
                 " SET @logo_x = '" + logoX + "'\n" +
                 " SET @logo_y = '" + logoY + "'\n" +
                 " SET @logo_size_percent = '" + logoSizePct + "'\n" +
@@ -313,9 +345,6 @@
                 " SET @sku_code_fs = '" + skuCodeFs + "'\n" +
                 " SET @sku_name_mt = '" + skuNameMt + "'\n" +
                 " SET @sku_name_fs = '" + skuNameFs + "'\n" +
-                " SET @frame_width = '" + frameW + "'\n" +
-                " SET @card_height = '" + cardH + "'\n" +
-                " SET @frame_bg_color = '" + frameBg + "'\n" +
                 "]%%\n";
 
             var render = "%%[ IF NOT Empty(@sku_slot) OR NOT Empty(@manual_sku) THEN OUTPUT(ContentBlockByName('" + lay + "')) ENDIF ]%%";
@@ -323,59 +352,65 @@
             sdk.setContent(logic + render);
             
             var dataToSave = {
-                master_layout: lay, data_source_type: dsType, sku_slot: slot, manual_sku: manualSku,
+                master_layout: lay, data_source_type: dsType, sku_slot: slot, manual_sku: manualSku, manual_camp_id: manualCampId,
                 img_format: format, sku_img_size: size, sku_img_version: version, sufijo1: suf1, sufijo2: suf2, logo_z_index: logoZ,
-                frame_to_card: fToCard, frame_to_photo: fToPhoto, sku_img_height: skuImgHeight,
+                frame_to_card: fToCard, frame_to_photo: fToPhoto, 
+                img_height_percent: imgHeightPercent, frame_width: frameW, frame_bg_color: frameBg, card_bg_color: cardBg, card_height: cardH, frame_pb: framePb,
                 logo_x: logoX, logo_y: logoY, logo_size_percent: logoSizePct,
                 show_debug: showDebug, show_name: showName, show_desc1: showDesc1, show_desc2: showDesc2,
-                sku_code_mt: skuCodeMt, sku_code_ml: skuCodeMl, sku_code_fs: skuCodeFs,
-                sku_name_mt: skuNameMt, sku_name_fs: skuNameFs,
-                frame_width: frameW, card_height: cardH, frame_bg_color: frameBg
+                sku_code_mt: skuCodeMt, sku_code_ml: skuCodeMl, sku_code_fs: skuCodeFs, sku_name_mt: skuNameMt, sku_name_fs: skuNameFs
             };
             sdk.setData(dataToSave);
         }
 
+        function initBlock() {
+            updateSizesDropdown();
+            sdk.getData(function(data) {
+                if (data && Object.keys(data).length > 0) {
+                    if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
+                    if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
+                    if(data.sku_slot) { var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]'); if(r) r.checked = true; }
+                    if(data.manual_sku) document.getElementById('manual_sku').value = data.manual_sku;
+                    if(data.manual_camp_id) document.getElementById('campaign_id_input').value = data.manual_camp_id;
+                    if(data.img_format) { document.getElementById('img_format').value = data.img_format; updateSizesDropdown(); }
+                    if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
+                    if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
+                    if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
+                    if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
+                    if(data.logo_z_index) document.getElementById('logo_z_index').value = data.logo_z_index;
+                    
+                    if(data.frame_to_card) document.getElementById('frame_to_card').value = data.frame_to_card;
+                    if(data.frame_to_photo) document.getElementById('frame_to_photo').value = data.frame_to_photo;
+                    
+                    if(data.img_height_percent) document.getElementById('img_height_percent').value = data.img_height_percent;
+                    if(data.frame_width) document.getElementById('frame_width').value = data.frame_width;
+                    if(data.frame_bg_color) document.getElementById('frame_bg_color').value = data.frame_bg_color;
+                    if(data.card_bg_color) document.getElementById('card_bg_color').value = data.card_bg_color;
+                    if(data.card_height) document.getElementById('card_height').value = data.card_height;
+                    if(data.frame_pb) document.getElementById('frame_pb').value = data.frame_pb;
+                    
+                    if(data.logo_x) document.getElementById('logo_x').value = data.logo_x;
+                    if(data.logo_y) document.getElementById('logo_y').value = data.logo_y;
+                    if(data.logo_size_percent) document.getElementById('logo_size_percent').value = data.logo_size_percent;
+                    
+                    if(data.show_debug !== undefined) document.getElementById('show_debug').checked = (data.show_debug === "true");
+                    if(data.show_name !== undefined) document.getElementById('show_name').checked = (data.show_name === "true");
+                    if(data.show_desc1 !== undefined) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
+                    if(data.show_desc2 !== undefined) document.getElementById('show_desc2').checked = (data.show_desc2 === "true");
+                    
+                    if(data.sku_code_mt) document.getElementById('sku_code_mt').value = data.sku_code_mt;
+                    if(data.sku_code_ml) document.getElementById('sku_code_ml').value = data.sku_code_ml;
+                    if(data.sku_code_fs) document.getElementById('sku_code_fs').value = data.sku_code_fs;
+                    if(data.sku_name_mt) document.getElementById('sku_name_mt').value = data.sku_name_mt;
+                    if(data.sku_name_fs) document.getElementById('sku_name_fs').value = data.sku_name_fs;
+                }
+                update();
+            });
+        }
+
         window.onload = function() {
             var isInit = false;
-            function start() {
-                if(isInit) return; isInit = true;
-                updateSizesDropdown();
-                sdk.getData(function(data) {
-                    if (data && Object.keys(data).length > 0) {
-                        if(data.master_layout) document.getElementById('master_layout').value = data.master_layout;
-                        if(data.data_source_type) document.getElementById('data_source_type').value = data.data_source_type;
-                        if(data.sku_slot) { var r = document.querySelector('input[name="sku_slot"][value="'+data.sku_slot+'"]'); if(r) r.checked = true; }
-                        if(data.manual_sku) document.getElementById('manual_sku').value = data.manual_sku;
-                        if(data.img_format) { document.getElementById('img_format').value = data.img_format; updateSizesDropdown(); }
-                        if(data.sku_img_size) document.getElementById('sku_img_size').value = data.sku_img_size;
-                        if(data.sku_img_version) document.getElementById('sku_img_version').value = data.sku_img_version;
-                        if(data.sufijo1) document.getElementById('logo_v').value = data.sufijo1;
-                        if(data.sufijo2) document.getElementById('logo_p').value = data.sufijo2;
-                        if(data.logo_z_index) document.getElementById('logo_z_index').value = data.logo_z_index;
-                        if(data.frame_to_card) document.getElementById('frame_to_card').value = data.frame_to_card;
-                        if(data.frame_to_photo) document.getElementById('frame_to_photo').value = data.frame_to_photo;
-                        if(data.sku_img_height) document.getElementById('sku_img_height').value = data.sku_img_height;
-                        if(data.logo_x) document.getElementById('logo_x').value = data.logo_x;
-                        if(data.logo_y) document.getElementById('logo_y').value = data.logo_y;
-                        if(data.logo_size_percent) document.getElementById('logo_size_percent').value = data.logo_size_percent;
-                        
-                        if(data.show_debug !== undefined) document.getElementById('show_debug').checked = (data.show_debug === "true");
-                        if(data.show_name !== undefined) document.getElementById('show_name').checked = (data.show_name === "true");
-                        if(data.show_desc1 !== undefined) document.getElementById('show_desc1').checked = (data.show_desc1 === "true");
-                        if(data.show_desc2 !== undefined) document.getElementById('show_desc2').checked = (data.show_desc2 === "true");
-                        
-                        if(data.sku_code_mt) document.getElementById('sku_code_mt').value = data.sku_code_mt;
-                        if(data.sku_code_ml) document.getElementById('sku_code_ml').value = data.sku_code_ml;
-                        if(data.sku_code_fs) document.getElementById('sku_code_fs').value = data.sku_code_fs;
-                        if(data.sku_name_mt) document.getElementById('sku_name_mt').value = data.sku_name_mt;
-                        if(data.sku_name_fs) document.getElementById('sku_name_fs').value = data.sku_name_fs;
-                        if(data.frame_width) document.getElementById('frame_width').value = data.frame_width;
-                        if(data.card_height) document.getElementById('card_height').value = data.card_height;
-                        if(data.frame_bg_color) document.getElementById('frame_bg_color').value = data.frame_bg_color;
-                    }
-                    update();
-                });
-            }
+            function start() { if(isInit) return; isInit = true; initBlock(); }
             setTimeout(start, 1000);
             fetch('templates.txt?t=' + new Date().getTime())
                 .then(r => r.ok ? r.text() : Promise.reject())
