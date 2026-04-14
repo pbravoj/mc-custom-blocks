@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>BPP Selector M10.24.0 - Strict Constraints</title>
+    <title>BPP Selector M10.26.0 - Híbrido & Storage</title>
     <script src="blocksdk.js"></script>
     <style>
         body { font-family: 'Salesforce Sans', Arial, sans-serif; padding: 0; margin: 0; background-color: #f4f6f9; color: #333; }
@@ -33,7 +33,7 @@
 <body>
     <div class="header">
         <img src="https://proveedores.implementos.cl/assets/img/implementos-logo.png" class="logo" alt="Implementos">
-        <h1 class="header-title">Configurador BPP (M10.24.0)</h1>
+        <h1 class="header-title">Configurador BPP (M10.26.0)</h1>
     </div>
 
     <div class="container">
@@ -65,7 +65,7 @@
                 <div class="flex-col">
                     <select id="data_source_type" onchange="update()">
                         <option value="parametric" selected>Paramétrico (DE)</option>
-                        <option value="recommended">Recomendado</option>
+                        <option value="recommended">Recomendado (Audiencia)</option>
                         <option value="manual">Manual</option>
                     </select>
                 </div>
@@ -83,8 +83,12 @@
             
             <label style="color: #0055aa; margin-top:10px;">Librerías y Formato</label>
             <div class="flex-row">
-                <select id="img_format" class="flex-col" onchange="updateSizesDropdown(); update();"><option value="png" selected>PNG</option><option value="jpg">JPG</option></select>
-                <select id="sku_img_size" class="flex-col" onchange="update()"><option value="h/">h/</option></select>
+                <select id="img_format" class="flex-col" onchange="updateSizesDropdown(); update();" style="flex: 1.5;">
+                    <option value="png_sq" selected>PNG Google Storage (Cuadrada)</option>
+                    <option value="png">PNG Antiguo (Transparente)</option>
+                    <option value="jpg">JPG Antiguo (Fondo Blanco)</option>
+                </select>
+                <select id="sku_img_size" class="flex-col" onchange="update()"><option value="450/">450/</option></select>
                 <select id="sku_img_version" class="flex-col" onchange="update()"><option value="-1" selected>-1</option><option value="-2">-2</option></select>
             </div>
 
@@ -100,9 +104,17 @@
                 </div>
             </div>
 
-            <div id="parametric_input_container" style="display:block; background:#f0f7ff; padding:15px; border-radius:4px; margin-top:15px;">
+            <div id="parametric_input_container" style="display:none; background:#f0f7ff; padding:15px; border-radius:4px; margin-top:15px;">
                 <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#0055aa;">Campaña Paramétrica (Opcional):</div>
                 <input type="text" id="campaign_id_input" placeholder="Ej: SKU_PARAMETRICOS" style="text-transform:uppercase; font-weight:bold; margin-bottom: 0;" oninput="update()">
+            </div>
+
+            <div id="recommended_input_container" style="display:none; background:#fff8e1; padding:15px; border-radius:4px; margin-top:15px; border: 1px solid #ffe082;">
+                <div style="font-size:11px; font-weight:bold; margin-bottom:4px; color:#f57f17;">Aviso de Modo Recomendado (Data Híbrida):</div>
+                <div style="font-size:10px; color:#666; line-height:1.4;">
+                    El sistema leerá el producto y su precio personalizado directamente de la audiencia usando las columnas <strong>@SKU_X</strong> y <strong>@PRECIO_X</strong> correspondientes al slot seleccionado.<br><br>
+                    <strong>Regla Override:</strong> Si se encuentra un precio en la audiencia, este anulará cualquier promoción por escala de la base de datos maestra. El nombre y foto se obtendrán de la Master_Products_DE.
+                </div>
             </div>
         </div>
 
@@ -201,7 +213,7 @@
 
             <label style="color: #e11d48; margin-top: 15px;">Control de Aspect Ratio (Regla del 60%)</label>
             <div style="background:#fefefe; border:1px solid #ddd; padding:10px; border-radius:4px; margin-bottom:15px; font-size:11px; color:#666;">
-                La altura de la foto se calculará automáticamente como un % de la altura de la tarjeta para evitar que las fotos verticales (PNGs) rompan el diseño en Android o Outlook.
+                La altura de la foto se calculará automáticamente como un % de la altura de la tarjeta para evitar que las fotos rompan el diseño en Outlook o Android.
             </div>
             <div class="flex-row">
                 <div class="flex-col">
@@ -210,7 +222,7 @@
                 </div>
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#e11d48;">% de Alto para Foto:</div>
-                    <input type="number" id="img_height_percent" value="60" oninput="update()" title="Si pones 60, la foto usará el 60% de los pixeles de la tarjeta.">
+                    <input type="number" id="img_height_percent" value="60" oninput="update()">
                 </div>
                 <div class="flex-col">
                     <div style="font-size:11px; font-weight:bold; color:#666;">Margen Inferior Gris (px):</div>
@@ -218,12 +230,12 @@
                 </div>
             </div>
             <div style="font-size:11px; color:#0055aa; margin-top: 5px; font-weight: bold;">
-                Altura forzada para la Foto: <span id="calc_img_height_display">288</span>px
+                Altura forzada calculada para Foto: <span id="calc_img_height_display">288</span>px
             </div>
         </div>
 
         <div class="footer">
-            Implementos S.A. | M10.24.0 (Calculadora Aspect Ratio)
+            Implementos S.A. | M10.26.0 (Híbrido & Storage API)
         </div>
     </div>
 
@@ -244,12 +256,25 @@
             var sizeSelect = document.getElementById('sku_img_size');
             var currVal = sizeSelect.value;
             sizeSelect.innerHTML = "";
-            var options = (format === 'png') ? [['h/', 'h/'], ['m/', 'm/']] : [['1000/', '1000/'], ['600/', '600/']];
+            var options = [];
+            
+            if (format === 'png_sq') {
+                options = [['1000/', '1000/'], ['600/', '600/'], ['450/', '450/'], ['250/', '250/'], ['150/', '150/']];
+            } else if (format === 'png') {
+                options = [['h/', 'h/'], ['m/', 'm/']];
+            } else if (format === 'jpg') {
+                options = [['1000/', '1000/'], ['600/', '600/']];
+            }
+
             options.forEach(function(opt) {
                 var el = document.createElement("option"); el.value = opt[0]; el.innerText = opt[1];
                 sizeSelect.appendChild(el);
             });
-            if (Array.from(sizeSelect.options).some(o => o.value === currVal)) sizeSelect.value = currVal;
+            if (Array.from(sizeSelect.options).some(o => o.value === currVal)) {
+                sizeSelect.value = currVal;
+            } else {
+                sizeSelect.selectedIndex = 0;
+            }
         }
 
         function loadLiveImage() {
@@ -258,13 +283,20 @@
             var size = document.getElementById('sku_img_size').value;
             var version = document.getElementById('sku_img_version').value;
             if (manualSkuVal === "") { alert("Escriba un SKU manual primero."); return; }
-            var url = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
+            
+            var url = "";
+            if (format === 'png_sq') {
+                url = "https://storage.googleapis.com/implementos_imagenes/productos/" + size + manualSkuVal + version + ".png";
+            } else {
+                url = "https://images.implementos.cl/img/" + size + manualSkuVal + version + "." + format;
+            }
+
             var container = document.getElementById('live_preview_container');
             var img = document.getElementById('live_sku_img');
             var status = document.getElementById('img_status');
             container.style.display = "block"; status.innerText = "Cargando..."; img.style.display = "none"; img.src = url;
             img.onload = function() { img.style.display = "inline-block"; status.innerText = ""; };
-            img.onerror = function() { status.innerText = "Error: Imagen no encontrada."; img.style.display = "none"; };
+            img.onerror = function() { status.innerText = "Error: Imagen no encontrada en Google Storage o CDN."; img.style.display = "none"; };
         }
 
         function update() {
@@ -291,7 +323,6 @@
             var cardH = document.getElementById('card_height').value;
             var framePb = document.getElementById('frame_pb').value;
             
-            // Matemática del 60%
             var imgHeightPercent = document.getElementById('img_height_percent').value;
             var calcImgHeight = Math.round(parseInt(cardH) * (parseInt(imgHeightPercent) / 100));
             document.getElementById('calc_img_height_display').innerText = calcImgHeight;
@@ -313,6 +344,7 @@
 
             document.getElementById('manual_input_container').style.display = (dsType === 'manual') ? 'block' : 'none';
             document.getElementById('parametric_input_container').style.display = (dsType === 'parametric') ? 'block' : 'none';
+            document.getElementById('recommended_input_container').style.display = (dsType === 'recommended') ? 'block' : 'none';
 
             var logic = "%%[\n" +
                 " SET @data_source_type = '" + dsType + "'\n" +
